@@ -1,0 +1,89 @@
+# Test your FastAPI endpoints
+
+GET http://127.0.0.1:8000/
+Accept: application/json
+
+###
+
+GET http://127.0.0.1:8000/health
+Accept: application/json
+
+###
+
+GET http://127.0.0.1:8000/api/heroes?keyword=崔斯特
+Accept: application/json
+
+###
+
+GET http://127.0.0.1:8000/api/heroes?price=1
+Accept: application/json
+
+###
+
+GET http://127.0.0.1:8000/api/heroes/11450
+Accept: application/json
+
+###
+
+GET http://127.0.0.1:8000/api/traits?keyword=木灵族
+Accept: application/json
+
+###
+
+GET http://127.0.0.1:8000/api/traits?checkId=402
+Accept: application/json
+
+###
+
+GET http://127.0.0.1:8000/api/traits/83100101
+Accept: application/json
+
+###
+
+GET http://127.0.0.1:8000/api/hexes?keyword=存心失利
+Accept: application/json
+
+###
+
+GET http://127.0.0.1:8000/api/hexes?level=2
+Accept: application/json
+
+###
+
+GET http://127.0.0.1:8000/api/hexes/1002
+Accept: application/json
+
+###
+
+GET http://127.0.0.1:8000/api/gods?keyword=奥瑞利安
+Accept: application/json
+
+###
+
+GET http://127.0.0.1:8000/api/gods?wishName=财富探险
+Accept: application/json
+
+###
+
+GET http://127.0.0.1:8000/api/gods/2
+Accept: application/json
+
+###
+
+GET http://127.0.0.1:8000/api/equips?keyword=暴风之剑
+Accept: application/json
+
+###
+
+GET http://127.0.0.1:8000/api/equips?type=基础装备
+Accept: application/json
+
+###
+
+GET http://127.0.0.1:8000/api/equips?materialId=1001&composable=true
+Accept: application/json
+
+###
+
+GET http://127.0.0.1:8000/api/equips/1001
+Accept: application/json
