@@ -225,131 +225,11 @@
       </view>
     </scroll-view>
 
-    <view v-if="selectedHero" class="detail-mask" @tap="closeHeroDetail">
-      <view class="hero-detail" @tap.stop>
-        <scroll-view scroll-y class="detail-page-scroll">
-          <view class="detail-visual">
-            <view
-              :class="['detail-portrait', activeSelectedHero.picture ? 'remote-image' : activeSelectedHero.bg]"
-              :style="activeSelectedHero.picture ? { backgroundImage: `url(${activeSelectedHero.picture})` } : {}"
-            ></view>
-            <view class="detail-cover"></view>
-            <button class="detail-close" hover-class="button-hover" @tap="closeHeroDetail">×</button>
-            <view class="detail-title">
-              <view class="detail-title-row">
-                <text class="detail-cost">{{ activeSelectedHero.cost }}费</text>
-                <text class="detail-star">{{ activeSelectedHero.starLabel }}</text>
-              </view>
-              <text class="detail-name">{{ activeSelectedHero.name }}</text>
-              <view class="detail-chip-row compact">
-                <text v-for="name in selectedHero.traitNames" :key="`trait-${name}`" class="detail-chip trait">{{ name }}</text>
-                <text v-for="name in selectedHero.classNames" :key="`class-${name}`" class="detail-chip role">{{ name }}</text>
-              </view>
-            </view>
-          </view>
-
-          <view class="detail-body">
-            <view v-if="selectedHeroStarOptions.length > 1" class="star-switch">
-              <view
-                v-for="(star, index) in selectedHeroStarOptions"
-                :key="star.key"
-                :class="['star-chip', selectedHeroStarIndex === index ? 'active' : '']"
-                @tap="selectedHeroStarIndex = index"
-              >
-                <text>{{ star.label }}</text>
-              </view>
-            </view>
-
-            <view class="detail-section skill-section">
-              <view class="section-line-title">
-                <image v-if="activeSelectedHero.raw.skillIcon" :src="activeSelectedHero.raw.skillIcon" mode="aspectFill" class="skill-icon"></image>
-                <view v-else class="skill-icon fallback">技</view>
-                <view class="section-title-copy">
-                  <text class="detail-section-title">英雄技能</text>
-                  <text class="detail-section-sub">{{ activeSelectedHero.skillName || activeSelectedHero.raw.tftHeroId }}</text>
-                </view>
-              </view>
-              <text class="detail-desc">{{ activeSelectedHero.raw.skillDesc || '暂无技能描述' }}</text>
-              <view v-if="selectedHeroSkillValues.length" class="skill-value-list">
-                <view v-for="value in selectedHeroSkillValues" :key="value.label" class="skill-value-row">
-                  <text>{{ value.label }}</text>
-                  <text>{{ value.value }}</text>
-                </view>
-              </view>
-            </view>
-
-            <view class="detail-section">
-              <view class="section-line-title">
-                <view class="mini-mark">属</view>
-                <view class="section-title-copy">
-                  <text class="detail-section-title">属性</text>
-                  <text class="detail-section-sub">1星 / 2星 / 3星 / 4星</text>
-                </view>
-              </view>
-              <view class="stat-grid">
-                <view v-for="stat in selectedHeroStarStats" :key="stat.label" class="stat-cell">
-                  <text class="stat-label">{{ stat.label }}</text>
-                  <text class="stat-value">{{ stat.value }}</text>
-                </view>
-              </view>
-            </view>
-
-            <view class="detail-section">
-              <view class="section-line-title">
-                <view class="mini-mark">羁</view>
-                <view class="section-title-copy">
-                  <text class="detail-section-title">羁绊</text>
-                  <text class="detail-section-sub">职业与特质效果</text>
-                </view>
-              </view>
-              <view class="trait-detail-list">
-                <view v-for="trait in selectedHeroTraitDetails" :key="trait.id" class="trait-detail-card">
-                  <view class="trait-detail-head">
-                    <image v-if="trait.picture" :src="trait.picture" mode="aspectFit" class="trait-detail-icon"></image>
-                    <view v-else :class="['trait-detail-icon', trait.tone]">{{ trait.icon }}</view>
-                    <view class="trait-detail-copy">
-                      <text class="trait-detail-name">{{ trait.name }}</text>
-                      <text class="trait-detail-count">{{ trait.count }}</text>
-                    </view>
-                  </view>
-                  <text class="trait-detail-desc">{{ trait.desc }}</text>
-                  <view class="trait-detail-levels">
-                    <text v-for="level in trait.levels" :key="level">{{ level }}</text>
-                  </view>
-                </view>
-              </view>
-            </view>
-
-            <view v-if="selectedHeroAllies.length" class="detail-section">
-              <view class="section-line-title">
-                <view class="mini-mark">协</view>
-                <view class="section-title-copy">
-                  <text class="detail-section-title">协同英雄</text>
-                  <text class="detail-section-sub">共享职业或特质</text>
-                </view>
-              </view>
-              <scroll-view scroll-x class="ally-scroll">
-                <view class="ally-row">
-                  <view v-for="ally in selectedHeroAllies" :key="ally.id" class="ally-card">
-                    <view
-                      :class="['ally-avatar', ally.picture ? 'remote-image' : ally.bg]"
-                      :style="ally.picture ? { backgroundImage: `url(${ally.picture})` } : {}"
-                    ></view>
-                    <text>{{ ally.name }}</text>
-                  </view>
-                </view>
-              </scroll-view>
-            </view>
-          </view>
-        </scroll-view>
-      </view>
-    </view>
   </view>
 </template>
 
 <script>
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000').replace(/\/$/, '');
-const HERO_DETAIL_IMAGE_BASE = 'https://game.gtimg.cn/images/jk/jkimg/mode17s18/1624x750/';
 const tonePalette = ['tone-gold', 'tone-blue', 'tone-violet', 'tone-rose'];
 const heroPalette = ['hero-one', 'hero-two', 'hero-three', 'hero-four', 'hero-five', 'hero-six'];
 const itemPalette = ['bg-sword', 'bg-bow', 'bg-rod', 'bg-tear', 'bg-vest', 'bg-cloak', 'bg-belt', 'bg-glove', 'bg-pan', 'bg-spatula'];
@@ -396,11 +276,6 @@ function splitIds(value) {
     .filter((item) => item && item !== '-1' && item !== '0');
 }
 
-function buildHeroDetailImage(hero) {
-  const heroPaint = compactText(hero?.heroPaint);
-  return heroPaint ? `${HERO_DETAIL_IMAGE_BASE}${heroPaint}.jpg` : '';
-}
-
 const baseItems = [
   { key: 'sword', label: '剑', bg: 'bg-sword' },
   { key: 'bow', label: '弓', bg: 'bg-bow' },
@@ -433,8 +308,6 @@ export default {
       activeTab: 'heroes',
       heroKeyword: '',
       activeHeroFilter: '',
-      selectedHero: null,
-      selectedHeroStarIndex: 0,
       loading: false,
       loadError: '',
       seasonMeta: null,
@@ -509,100 +382,6 @@ export default {
         return [{ value: '', label: '全部特质' }, ...this.heroTraitOptions];
       }
       return [];
-    },
-    activeSelectedHero() {
-      if (!this.selectedHero) return null;
-      const variants = this.selectedHero.variants || [];
-      const current = variants[this.selectedHeroStarIndex] || variants[0];
-      if (!current) return this.selectedHero;
-      const raw = current.raw || {};
-      return {
-        ...this.selectedHero,
-        raw,
-        picture: buildHeroDetailImage(raw) || raw.picture || this.selectedHero.picture,
-        skillName: compactText(raw.skillName, this.selectedHero.skillName),
-        starLabel: current.label,
-      };
-    },
-    selectedHeroStarOptions() {
-      return this.selectedHero?.variants || [];
-    },
-    selectedHeroSkillValues() {
-      const text = compactText(this.activeSelectedHero?.raw?.skillValueDesc);
-      if (!text) return [];
-      return text
-        .split('|')
-        .map((part, index) => {
-          const pieces = compactText(part).split(/[:：]/);
-          if (pieces.length < 2) {
-            return { label: `数值 ${index + 1}`, value: compactText(part) };
-          }
-          return {
-            label: compactText(pieces.shift()),
-            value: compactText(pieces.join('：')),
-          };
-        })
-        .filter((item) => item.value)
-        .slice(0, 4);
-    },
-    selectedHeroTraitDetails() {
-      if (!this.selectedHero) return [];
-      const ids = [...this.selectedHero.traitIds, ...this.selectedHero.classIds];
-      return ids
-        .map((id) => this.traits.find((trait) => trait.id === id))
-        .filter(Boolean);
-    },
-    selectedHeroAllies() {
-      if (!this.selectedHero) return [];
-      const ownIds = new Set([...this.selectedHero.traitIds, ...this.selectedHero.classIds]);
-      return this.heroes
-        .filter((hero) => hero.id !== this.selectedHero.id)
-        .map((hero) => {
-          const shared = [...hero.traitIds, ...hero.classIds].filter((id) => ownIds.has(id));
-          return { ...hero, sharedCount: shared.length };
-        })
-        .filter((hero) => hero.sharedCount > 0)
-        .sort((a, b) => b.sharedCount - a.sharedCount || Number(a.cost || 0) - Number(b.cost || 0))
-        .slice(0, 12);
-    },
-    selectedHeroStarStats() {
-      const variants = this.selectedHeroStarOptions.length
-        ? this.selectedHeroStarOptions
-        : [{ raw: this.activeSelectedHero?.raw || {} }];
-      const joinValues = (field, fallback = '-') => variants
-        .map((variant) => compactText(variant.raw?.[field], fallback))
-        .join('/');
-      const joinMana = () => variants
-        .map((variant) => {
-          const raw = variant.raw || {};
-          return `${compactText(raw.initMP, '0')}/${compactText(raw.maxMP, '0')}`;
-        })
-        .join('/');
-      return [
-        { label: '生命', value: joinValues('initHP') },
-        { label: '暴击率', value: joinValues('criticalStrikeChance') },
-        { label: '护甲', value: joinValues('armor') },
-        { label: '攻击距离', value: joinValues('attackRange') },
-        { label: '魔抗', value: joinValues('magicResist') },
-        { label: '初始法力值', value: joinMana() },
-        { label: '物攻', value: joinValues('initAttackDamage') },
-        { label: '法力值', value: joinValues('maxMP') },
-        { label: '攻速', value: joinValues('attackSpeed') },
-      ];
-    },
-    selectedHeroStats() {
-      if (!this.activeSelectedHero) return [];
-      const hero = this.activeSelectedHero.raw || {};
-      return [
-        { label: '生命', value: compactText(hero.initHP, '-') },
-        { label: '法力', value: `${compactText(hero.initMP, '0')}/${compactText(hero.maxMP, '0')}` },
-        { label: '攻击', value: compactText(hero.initAttackDamage, '-') },
-        { label: '攻速', value: compactText(hero.attackSpeed, '-') },
-        { label: '护甲', value: compactText(hero.armor, '-') },
-        { label: '魔抗', value: compactText(hero.magicResist, '-') },
-        { label: '射程', value: compactText(hero.attackRange, '-') },
-        { label: '暴击', value: `${compactText(hero.criticalStrikeChance, '-')}%` },
-      ];
     },
     visibleHeroes() {
       const keyword = this.heroKeyword.trim();
@@ -683,12 +462,9 @@ export default {
       this.activeHeroFilter = '';
     },
     openHeroDetail(hero) {
-      this.selectedHero = hero;
-      this.selectedHeroStarIndex = 0;
-    },
-    closeHeroDetail() {
-      this.selectedHero = null;
-      this.selectedHeroStarIndex = 0;
+      uni.navigateTo({
+        url: `/pages/season/detail?id=${encodeURIComponent(hero.raw?.id || hero.id || '')}`,
+      });
     },
     heroFilterValue(key) {
       return this.heroFiltersValue[key] || '';
@@ -1505,33 +1281,6 @@ export default {
   z-index: 1;
   margin-top: -8rpx;
   padding: 22rpx 24rpx 48rpx;
-}
-
-.star-switch {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12rpx;
-  margin-bottom: 22rpx;
-}
-
-.star-chip {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 62rpx;
-  border: 1rpx solid rgba(221, 166, 100, 0.26);
-  border-radius: 14rpx;
-  color: rgba(245, 230, 203, 0.72);
-  font-size: 24rpx;
-  font-weight: 900;
-  background: rgba(255, 255, 255, 0.055);
-}
-
-.star-chip.active {
-  color: #241426;
-  border-color: rgba(255, 224, 163, 0.88);
-  background: linear-gradient(135deg, #ffe0a3, #c48b43);
-  box-shadow: 0 12rpx 28rpx rgba(196, 139, 67, 0.24);
 }
 
 .detail-section {

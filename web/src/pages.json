@@ -21,6 +21,13 @@
 			}
 		},
 		{
+			"path": "pages/season/detail",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "英雄详情"
+			}
+		},
+		{
 			"path": "pages/ai/index",
 			"style": {
 				"navigationBarTitleText": "AI阵容"
