@@ -1,19 +1,5 @@
 <template>
   <view class="season-page">
-    <view class="top-visual">
-      <view class="title-bar">
-        <text class="title-deco">◇</text>
-        <text class="page-title">赛季资料</text>
-        <text class="title-deco">◇</text>
-      </view>
-      <view class="window-actions">
-        <text>•••</text>
-        <text class="divider"></text>
-        <text>−</text>
-        <text class="circle"></text>
-      </view>
-    </view>
-
     <view class="tab-shell">
       <view
         v-for="tab in tabs"
@@ -167,7 +153,9 @@
       <view v-else-if="activeTab === 'items'" class="tab-panel item-panel">
         <view class="section-head">
           <text class="section-title">装备资料</text>
-          <text class="section-sub">按基础、成型、光明、神器和特殊装备分类</text>
+          <text class="section-sub"
+            >按基础、成型、光明、神器和特殊装备分类</text
+          >
         </view>
 
         <scroll-view scroll-x class="equip-type-scroll">
@@ -247,8 +235,12 @@
                 <text class="equip-name">{{ item.name }}</text>
                 <text class="equip-type-label">{{ item.displayType }}</text>
               </view>
-              <text v-if="item.basicDesc" class="equip-basic">{{ item.basicDesc }}</text>
-              <text class="equip-desc">{{ item.desc || item.basicDesc || '暂无装备说明' }}</text>
+              <text v-if="item.basicDesc" class="equip-basic">{{
+                item.basicDesc
+              }}</text>
+              <text class="equip-desc">{{
+                item.desc || item.basicDesc || "暂无装备说明"
+              }}</text>
             </view>
           </view>
         </view>
@@ -316,6 +308,21 @@
               placeholder-class="placeholder"
             />
           </view>
+          <scroll-view scroll-x class="god-filter-scroll">
+            <view class="god-filter-row">
+              <view
+                v-for="god in godFilters"
+                :key="god.value"
+                :class="[
+                  'god-filter-pill',
+                  activeGodId === god.value ? 'active' : '',
+                ]"
+                @tap="activeGodId = god.value"
+              >
+                <text>{{ god.label }}</text>
+              </view>
+            </view>
+          </scroll-view>
           <scroll-view scroll-x class="god-category-scroll">
             <view class="god-category-row">
               <view
@@ -331,7 +338,9 @@
               </view>
             </view>
           </scroll-view>
-          <text class="god-summary">{{ visibleGodWishes.length }} / {{ allGodWishes.length }}</text>
+          <text class="god-summary"
+            >{{ visibleGodWishes.length }} / {{ allGodWishes.length }}</text
+          >
         </view>
 
         <view class="god-list">
@@ -347,10 +356,14 @@
                 mode="aspectFit"
                 class="god-wish-icon"
               ></image>
-              <view v-else :class="['god-wish-icon', wish.tone]">{{ wish.iconText }}</view>
+              <view v-else :class="['god-wish-icon', wish.tone]">{{
+                wish.iconText
+              }}</view>
               <view class="god-card-title">
                 <text class="god-name">{{ wish.name }}</text>
-                <text class="god-source">{{ wish.godName }} · {{ wish.stage }}阶段</text>
+                <text class="god-source"
+                  >{{ wish.godName }} · {{ wish.stage }}阶段</text
+                >
               </view>
             </view>
             <view class="god-tags">
@@ -471,6 +484,7 @@ export default {
       heroKeyword: "",
       activeHeroFilter: "",
       activeRuneLevel: "",
+      activeGodId: "",
       activeGodCategory: "",
       godKeyword: "",
       loading: false,
@@ -647,9 +661,19 @@ export default {
     allGodWishes() {
       return this.gods.flatMap((god) => god.wishes || []);
     },
+    godFilters() {
+      return [
+        { value: "", label: "全部星神" },
+        ...this.gods.map((god) => ({
+          value: String(god.id),
+          label: god.shortName || god.name,
+        })),
+      ];
+    },
     visibleGodWishes() {
       const keyword = this.godKeyword.trim();
       return this.allGodWishes.filter((wish) => {
+        const matchesGod = !this.activeGodId || wish.godId === this.activeGodId;
         const matchesCategory =
           !this.activeGodCategory ||
           wish.typeIds.includes(this.activeGodCategory);
@@ -658,7 +682,7 @@ export default {
           wish.name.includes(keyword) ||
           wish.godName.includes(keyword) ||
           wish.desc.includes(keyword);
-        return matchesCategory && matchesKeyword;
+        return matchesGod && matchesCategory && matchesKeyword;
       });
     },
     visibleHeroes() {
@@ -1005,6 +1029,7 @@ export default {
         return {
           id: god.godId,
           name: godName,
+          shortName: godName.split(" ")[0],
           icon: firstChar(godName),
           iconUrl: god.godIcon || god.tex,
           tip: compactText(god.godTips),
@@ -1020,6 +1045,7 @@ export default {
           const typeIds = splitIds(wish.type);
           return {
             id: `${god.godId}-${stage.num}-${wish.id}`,
+            godId: String(god.godId),
             name: compactText(wish.name),
             desc: compactText(wish.desc),
             icon: wish.icon,
@@ -1055,23 +1081,6 @@ export default {
   overflow: hidden;
   color: #f5e6cb;
   background: #21102a;
-}
-
-.top-visual {
-  position: relative;
-  height: 158rpx;
-  padding-top: calc(var(--status-bar-height) + 38rpx);
-  overflow: hidden;
-  border-bottom: 1rpx solid rgba(226, 176, 108, 0.45);
-  border-radius: 0 0 34rpx 34rpx;
-  background:
-    radial-gradient(
-      circle at 46% 0%,
-      rgba(211, 136, 71, 0.18),
-      transparent 18%
-    ),
-    radial-gradient(circle at 20% 0%, rgba(95, 48, 171, 0.62), transparent 46%),
-    linear-gradient(135deg, #16091f 0%, #351a49 52%, #12091b 100%);
 }
 
 .title-bar {
@@ -2410,7 +2419,11 @@ export default {
   border-radius: 20rpx;
   background:
     linear-gradient(90deg, rgba(104, 75, 190, 0.96), rgba(104, 75, 190, 0.48)),
-    radial-gradient(circle at 86% 28%, rgba(255, 205, 130, 0.58), transparent 22%),
+    radial-gradient(
+      circle at 86% 28%,
+      rgba(255, 205, 130, 0.58),
+      transparent 22%
+    ),
     linear-gradient(135deg, #25123a, #684bbe 58%, #16091f);
 }
 
@@ -2474,17 +2487,20 @@ export default {
   font-weight: 800;
 }
 
+.god-filter-scroll,
 .god-category-scroll {
   width: 100%;
   margin-top: 16rpx;
   white-space: nowrap;
 }
 
+.god-filter-row,
 .god-category-row {
   display: flex;
   gap: 12rpx;
 }
 
+.god-filter-pill,
 .god-category-pill {
   flex: 0 0 auto;
   min-width: 118rpx;
@@ -2500,6 +2516,14 @@ export default {
   background: rgba(22, 9, 28, 0.26);
 }
 
+.god-filter-pill {
+  min-width: 150rpx;
+  border-color: rgba(167, 132, 255, 0.34);
+  color: #fff2dc;
+  background: rgba(104, 75, 190, 0.48);
+}
+
+.god-filter-pill.active,
 .god-category-pill.active {
   color: #241426;
   border-color: rgba(255, 224, 163, 0.88);
