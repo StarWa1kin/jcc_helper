@@ -227,53 +227,118 @@
 
     <view v-if="selectedHero" class="detail-mask" @tap="closeHeroDetail">
       <view class="hero-detail" @tap.stop>
-        <view class="detail-visual">
-          <view
-            :class="['detail-portrait', activeSelectedHero.picture ? 'remote-image' : activeSelectedHero.bg]"
-            :style="activeSelectedHero.picture ? { backgroundImage: `url(${activeSelectedHero.picture})` } : {}"
-          ></view>
-          <view class="detail-cover"></view>
-          <button class="detail-close" hover-class="button-hover" @tap="closeHeroDetail">×</button>
-          <view class="detail-title">
-            <text class="detail-cost">{{ activeSelectedHero.cost }}费</text>
-            <text class="detail-name">{{ activeSelectedHero.name }}</text>
-            <text class="detail-sub">{{ activeSelectedHero.starLabel }} · {{ activeSelectedHero.skillName || activeSelectedHero.raw.tftHeroId }}</text>
-          </view>
-        </view>
-
-        <scroll-view scroll-y class="detail-scroll">
-          <view v-if="selectedHeroStarOptions.length > 1" class="star-switch">
+        <scroll-view scroll-y class="detail-page-scroll">
+          <view class="detail-visual">
             <view
-              v-for="(star, index) in selectedHeroStarOptions"
-              :key="star.key"
-              :class="['star-chip', selectedHeroStarIndex === index ? 'active' : '']"
-              @tap="selectedHeroStarIndex = index"
-            >
-              <text>{{ star.label }}</text>
-            </view>
-          </view>
-
-          <view class="detail-section">
-            <text class="detail-section-title">职业特质</text>
-            <view class="detail-chip-row">
-              <text v-for="name in selectedHero.traitNames" :key="`trait-${name}`" class="detail-chip trait">{{ name }}</text>
-              <text v-for="name in selectedHero.classNames" :key="`class-${name}`" class="detail-chip role">{{ name }}</text>
-            </view>
-          </view>
-
-          <view class="detail-section">
-            <text class="detail-section-title">技能</text>
-            <text class="detail-desc">{{ activeSelectedHero.raw.skillDesc || '暂无技能描述' }}</text>
-            <text v-if="activeSelectedHero.raw.skillValueDesc" class="detail-value">{{ activeSelectedHero.raw.skillValueDesc }}</text>
-          </view>
-
-          <view class="detail-section">
-            <text class="detail-section-title">基础属性</text>
-            <view class="stat-grid">
-              <view v-for="stat in selectedHeroStats" :key="stat.label" class="stat-cell">
-                <text class="stat-label">{{ stat.label }}</text>
-                <text class="stat-value">{{ stat.value }}</text>
+              :class="['detail-portrait', activeSelectedHero.picture ? 'remote-image' : activeSelectedHero.bg]"
+              :style="activeSelectedHero.picture ? { backgroundImage: `url(${activeSelectedHero.picture})` } : {}"
+            ></view>
+            <view class="detail-cover"></view>
+            <button class="detail-close" hover-class="button-hover" @tap="closeHeroDetail">×</button>
+            <view class="detail-title">
+              <view class="detail-title-row">
+                <text class="detail-cost">{{ activeSelectedHero.cost }}费</text>
+                <text class="detail-star">{{ activeSelectedHero.starLabel }}</text>
               </view>
+              <text class="detail-name">{{ activeSelectedHero.name }}</text>
+              <view class="detail-chip-row compact">
+                <text v-for="name in selectedHero.traitNames" :key="`trait-${name}`" class="detail-chip trait">{{ name }}</text>
+                <text v-for="name in selectedHero.classNames" :key="`class-${name}`" class="detail-chip role">{{ name }}</text>
+              </view>
+            </view>
+          </view>
+
+          <view class="detail-body">
+            <view v-if="selectedHeroStarOptions.length > 1" class="star-switch">
+              <view
+                v-for="(star, index) in selectedHeroStarOptions"
+                :key="star.key"
+                :class="['star-chip', selectedHeroStarIndex === index ? 'active' : '']"
+                @tap="selectedHeroStarIndex = index"
+              >
+                <text>{{ star.label }}</text>
+              </view>
+            </view>
+
+            <view class="detail-section skill-section">
+              <view class="section-line-title">
+                <image v-if="activeSelectedHero.raw.skillIcon" :src="activeSelectedHero.raw.skillIcon" mode="aspectFill" class="skill-icon"></image>
+                <view v-else class="skill-icon fallback">技</view>
+                <view class="section-title-copy">
+                  <text class="detail-section-title">英雄技能</text>
+                  <text class="detail-section-sub">{{ activeSelectedHero.skillName || activeSelectedHero.raw.tftHeroId }}</text>
+                </view>
+              </view>
+              <text class="detail-desc">{{ activeSelectedHero.raw.skillDesc || '暂无技能描述' }}</text>
+              <view v-if="selectedHeroSkillValues.length" class="skill-value-list">
+                <view v-for="value in selectedHeroSkillValues" :key="value.label" class="skill-value-row">
+                  <text>{{ value.label }}</text>
+                  <text>{{ value.value }}</text>
+                </view>
+              </view>
+            </view>
+
+            <view class="detail-section">
+              <view class="section-line-title">
+                <view class="mini-mark">属</view>
+                <view class="section-title-copy">
+                  <text class="detail-section-title">属性</text>
+                  <text class="detail-section-sub">当前星级基础面板</text>
+                </view>
+              </view>
+              <view class="stat-grid">
+                <view v-for="stat in selectedHeroStats" :key="stat.label" class="stat-cell">
+                  <text class="stat-label">{{ stat.label }}</text>
+                  <text class="stat-value">{{ stat.value }}</text>
+                </view>
+              </view>
+            </view>
+
+            <view class="detail-section">
+              <view class="section-line-title">
+                <view class="mini-mark">羁</view>
+                <view class="section-title-copy">
+                  <text class="detail-section-title">羁绊</text>
+                  <text class="detail-section-sub">职业与特质效果</text>
+                </view>
+              </view>
+              <view class="trait-detail-list">
+                <view v-for="trait in selectedHeroTraitDetails" :key="trait.id" class="trait-detail-card">
+                  <view class="trait-detail-head">
+                    <image v-if="trait.picture" :src="trait.picture" mode="aspectFit" class="trait-detail-icon"></image>
+                    <view v-else :class="['trait-detail-icon', trait.tone]">{{ trait.icon }}</view>
+                    <view class="trait-detail-copy">
+                      <text class="trait-detail-name">{{ trait.name }}</text>
+                      <text class="trait-detail-count">{{ trait.count }}</text>
+                    </view>
+                  </view>
+                  <text class="trait-detail-desc">{{ trait.desc }}</text>
+                  <view class="trait-detail-levels">
+                    <text v-for="level in trait.levels" :key="level">{{ level }}</text>
+                  </view>
+                </view>
+              </view>
+            </view>
+
+            <view v-if="selectedHeroAllies.length" class="detail-section">
+              <view class="section-line-title">
+                <view class="mini-mark">协</view>
+                <view class="section-title-copy">
+                  <text class="detail-section-title">协同英雄</text>
+                  <text class="detail-section-sub">共享职业或特质</text>
+                </view>
+              </view>
+              <scroll-view scroll-x class="ally-scroll">
+                <view class="ally-row">
+                  <view v-for="ally in selectedHeroAllies" :key="ally.id" class="ally-card">
+                    <view
+                      :class="['ally-avatar', ally.picture ? 'remote-image' : ally.bg]"
+                      :style="ally.picture ? { backgroundImage: `url(${ally.picture})` } : {}"
+                    ></view>
+                    <text>{{ ally.name }}</text>
+                  </view>
+                </view>
+              </scroll-view>
             </view>
           </view>
         </scroll-view>
@@ -455,6 +520,44 @@ export default {
     },
     selectedHeroStarOptions() {
       return this.selectedHero?.variants || [];
+    },
+    selectedHeroSkillValues() {
+      const text = compactText(this.activeSelectedHero?.raw?.skillValueDesc);
+      if (!text) return [];
+      return text
+        .split('|')
+        .map((part, index) => {
+          const pieces = compactText(part).split(/[:：]/);
+          if (pieces.length < 2) {
+            return { label: `数值 ${index + 1}`, value: compactText(part) };
+          }
+          return {
+            label: compactText(pieces.shift()),
+            value: compactText(pieces.join('：')),
+          };
+        })
+        .filter((item) => item.value)
+        .slice(0, 4);
+    },
+    selectedHeroTraitDetails() {
+      if (!this.selectedHero) return [];
+      const ids = [...this.selectedHero.traitIds, ...this.selectedHero.classIds];
+      return ids
+        .map((id) => this.traits.find((trait) => trait.id === id))
+        .filter(Boolean);
+    },
+    selectedHeroAllies() {
+      if (!this.selectedHero) return [];
+      const ownIds = new Set([...this.selectedHero.traitIds, ...this.selectedHero.classIds]);
+      return this.heroes
+        .filter((hero) => hero.id !== this.selectedHero.id)
+        .map((hero) => {
+          const shared = [...hero.traitIds, ...hero.classIds].filter((id) => ownIds.has(id));
+          return { ...hero, sharedCount: shared.length };
+        })
+        .filter((hero) => hero.sharedCount > 0)
+        .sort((a, b) => b.sharedCount - a.sharedCount || Number(a.cost || 0) - Number(b.cost || 0))
+        .slice(0, 12);
     },
     selectedHeroStats() {
       if (!this.activeSelectedHero) return [];
@@ -1256,40 +1359,44 @@ export default {
   z-index: 50;
   display: flex;
   align-items: flex-end;
-  background: rgba(9, 4, 14, 0.72);
+  background: rgba(9, 4, 14, 0.78);
 }
 
 .hero-detail {
   width: 100%;
-  height: 88vh;
+  height: 92vh;
   overflow: hidden;
-  border-radius: 34rpx 34rpx 0 0;
+  border-radius: 30rpx 30rpx 0 0;
   background:
-    radial-gradient(circle at 78% 0%, rgba(201, 151, 84, 0.18), transparent 24%),
-    linear-gradient(180deg, #1c1028 0%, #2b1434 56%, #1b0b21 100%);
+    linear-gradient(180deg, rgba(57, 36, 102, 0.88), rgba(23, 12, 36, 0.96) 38%, #14091d 100%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.035) 0, rgba(255, 255, 255, 0.035) 1rpx, transparent 1rpx, transparent 6rpx);
+}
+
+.detail-page-scroll {
+  height: 92vh;
 }
 
 .detail-visual {
   position: relative;
-  height: 360rpx;
+  height: 520rpx;
   overflow: hidden;
 }
 
 .detail-portrait {
   position: absolute;
   inset: 0;
-  background-position: center 24%;
+  background-position: center 18%;
   background-repeat: no-repeat;
   background-size: cover;
-  transform: scale(1.04);
+  transform: scale(1.08);
 }
 
 .detail-cover {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(90deg, rgba(15, 6, 21, 0.92) 0%, rgba(15, 6, 21, 0.3) 55%, rgba(15, 6, 21, 0.74) 100%),
-    linear-gradient(180deg, transparent 35%, #1c1028 100%);
+    linear-gradient(90deg, rgba(14, 7, 24, 0.78) 0%, rgba(14, 7, 24, 0.18) 56%, rgba(14, 7, 24, 0.7) 100%),
+    linear-gradient(180deg, rgba(14, 7, 24, 0.2) 0%, rgba(14, 7, 24, 0.18) 45%, #201037 100%);
 }
 
 .detail-close {
@@ -1299,15 +1406,16 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 62rpx;
-  height: 62rpx;
+  width: 68rpx;
+  height: 68rpx;
   padding: 0;
   border: 0;
   border-radius: 50%;
   color: #fff2dc;
-  font-size: 42rpx;
-  line-height: 62rpx;
-  background: rgba(22, 9, 28, 0.64);
+  font-size: 44rpx;
+  line-height: 68rpx;
+  background: rgba(16, 8, 28, 0.72);
+  backdrop-filter: blur(8rpx);
 }
 
 .detail-close::after {
@@ -1317,8 +1425,14 @@ export default {
 .detail-title {
   position: absolute;
   left: 28rpx;
-  right: 104rpx;
-  bottom: 34rpx;
+  right: 28rpx;
+  bottom: 28rpx;
+}
+
+.detail-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
 }
 
 .detail-cost {
@@ -1334,25 +1448,32 @@ export default {
   background: rgba(22, 9, 28, 0.64);
 }
 
+.detail-star {
+  display: inline-flex;
+  align-items: center;
+  height: 42rpx;
+  padding: 0 16rpx;
+  border: 1rpx solid rgba(133, 244, 236, 0.56);
+  border-radius: 12rpx;
+  color: #a8fff6;
+  font-size: 22rpx;
+  font-weight: 900;
+  background: rgba(18, 68, 72, 0.42);
+}
+
 .detail-name {
   display: block;
   margin-top: 14rpx;
   color: #fff4df;
-  font-size: 46rpx;
+  font-size: 52rpx;
   font-weight: 900;
 }
 
-.detail-sub {
-  display: block;
-  margin-top: 8rpx;
-  color: rgba(239, 219, 188, 0.72);
-  font-size: 25rpx;
-  font-weight: 800;
-}
-
-.detail-scroll {
-  height: calc(88vh - 360rpx);
-  padding: 22rpx 24rpx 44rpx;
+.detail-body {
+  position: relative;
+  z-index: 1;
+  margin-top: -8rpx;
+  padding: 22rpx 24rpx 48rpx;
 }
 
 .star-switch {
@@ -1384,10 +1505,28 @@ export default {
 
 .detail-section {
   margin-bottom: 22rpx;
-  padding: 22rpx;
-  border: 1rpx solid rgba(221, 166, 100, 0.26);
-  border-radius: 16rpx;
-  background: rgba(255, 255, 255, 0.055);
+  padding: 24rpx;
+  overflow: hidden;
+  border: 1rpx solid rgba(221, 166, 100, 0.24);
+  border-radius: 18rpx;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.035)),
+    rgba(19, 9, 31, 0.66);
+  box-shadow: inset 0 1rpx 0 rgba(255, 255, 255, 0.08);
+}
+
+.skill-section {
+  border-color: rgba(245, 211, 122, 0.34);
+}
+
+.section-line-title {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.section-title-copy {
+  min-width: 0;
 }
 
 .detail-section-title {
@@ -1397,11 +1536,26 @@ export default {
   font-weight: 900;
 }
 
+.detail-section-sub {
+  display: block;
+  margin-top: 4rpx;
+  overflow: hidden;
+  color: rgba(239, 219, 188, 0.58);
+  font-size: 21rpx;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .detail-chip-row {
   display: flex;
   flex-wrap: wrap;
   gap: 12rpx;
   margin-top: 16rpx;
+}
+
+.detail-chip-row.compact {
+  margin-top: 18rpx;
 }
 
 .detail-chip {
@@ -1427,26 +1581,71 @@ export default {
   display: block;
   margin-top: 16rpx;
   color: rgba(245, 230, 203, 0.76);
-  font-size: 25rpx;
-  line-height: 38rpx;
+  font-size: 24rpx;
+  line-height: 39rpx;
 }
 
 .detail-value {
   color: #e8c896;
 }
 
+.skill-icon,
+.mini-mark {
+  flex: 0 0 auto;
+  width: 70rpx;
+  height: 70rpx;
+  overflow: hidden;
+  border: 1rpx solid rgba(255, 224, 163, 0.5);
+  border-radius: 14rpx;
+  background: rgba(255, 224, 163, 0.12);
+}
+
+.skill-icon.fallback,
+.mini-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffe0a3;
+  font-size: 24rpx;
+  font-weight: 900;
+}
+
+.skill-value-list {
+  margin-top: 18rpx;
+  border-top: 1rpx solid rgba(255, 224, 163, 0.16);
+}
+
+.skill-value-row {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr);
+  gap: 16rpx;
+  padding: 14rpx 0;
+  border-bottom: 1rpx solid rgba(255, 224, 163, 0.12);
+  color: rgba(245, 230, 203, 0.74);
+  font-size: 23rpx;
+  font-weight: 800;
+  line-height: 34rpx;
+}
+
+.skill-value-row text:last-child {
+  color: #f6d49a;
+}
+
 .stat-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12rpx;
-  margin-top: 16rpx;
+  margin-top: 20rpx;
 }
 
 .stat-cell {
-  min-height: 76rpx;
-  padding: 12rpx 8rpx;
-  border-radius: 12rpx;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 70rpx;
+  padding: 0 16rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.06);
+  border-radius: 14rpx;
   background: rgba(18, 9, 27, 0.42);
 }
 
@@ -1457,15 +1656,130 @@ export default {
 
 .stat-label {
   color: rgba(235, 214, 194, 0.54);
-  font-size: 20rpx;
+  font-size: 22rpx;
   font-weight: 800;
 }
 
 .stat-value {
-  margin-top: 6rpx;
   color: #fff2dc;
-  font-size: 24rpx;
+  font-size: 23rpx;
   font-weight: 900;
+}
+
+.trait-detail-list {
+  display: grid;
+  gap: 16rpx;
+  margin-top: 20rpx;
+}
+
+.trait-detail-card {
+  padding: 18rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.07);
+  border-radius: 16rpx;
+  background: rgba(18, 9, 27, 0.42);
+}
+
+.trait-detail-head {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+}
+
+.trait-detail-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 62rpx;
+  height: 62rpx;
+  overflow: hidden;
+  border-radius: 50%;
+  color: #fff2dc;
+  font-size: 22rpx;
+  font-weight: 900;
+}
+
+.trait-detail-copy {
+  min-width: 0;
+}
+
+.trait-detail-name {
+  display: block;
+  color: #fff0d6;
+  font-size: 25rpx;
+  font-weight: 900;
+}
+
+.trait-detail-count {
+  display: block;
+  margin-top: 4rpx;
+  color: #e8c896;
+  font-size: 21rpx;
+  font-weight: 800;
+}
+
+.trait-detail-desc {
+  display: block;
+  margin-top: 14rpx;
+  color: rgba(245, 230, 203, 0.7);
+  font-size: 23rpx;
+  line-height: 36rpx;
+}
+
+.trait-detail-levels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  margin-top: 14rpx;
+}
+
+.trait-detail-levels text {
+  max-width: 100%;
+  padding: 8rpx 12rpx;
+  border-radius: 10rpx;
+  color: #241426;
+  font-size: 20rpx;
+  font-weight: 900;
+  background: linear-gradient(135deg, #ffe0a3, #c48b43);
+}
+
+.ally-scroll {
+  width: 100%;
+  margin-top: 20rpx;
+  white-space: nowrap;
+}
+
+.ally-row {
+  display: flex;
+  gap: 16rpx;
+}
+
+.ally-card {
+  flex: 0 0 102rpx;
+  width: 102rpx;
+}
+
+.ally-avatar {
+  width: 96rpx;
+  height: 96rpx;
+  overflow: hidden;
+  border: 2rpx solid rgba(255, 224, 163, 0.34);
+  border-radius: 50%;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.ally-card text {
+  display: block;
+  margin-top: 10rpx;
+  overflow: hidden;
+  color: rgba(245, 230, 203, 0.76);
+  font-size: 20rpx;
+  font-weight: 900;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .section-head {
