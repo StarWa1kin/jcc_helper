@@ -166,8 +166,26 @@
 
       <view v-else-if="activeTab === 'items'" class="tab-panel item-panel">
         <view class="section-head">
-          <text class="section-title">基础装备</text>
+          <text class="section-title">装备资料</text>
+          <text class="section-sub">按基础、成型、光明、神器和特殊装备分类</text>
         </view>
+
+        <scroll-view scroll-x class="equip-type-scroll">
+          <view class="equip-type-row">
+            <view
+              v-for="type in equipTypeFilters"
+              :key="type.value"
+              :class="[
+                'equip-type-pill',
+                activeEquipType === type.value ? 'active' : '',
+              ]"
+              @tap="activeEquipType = type.value"
+            >
+              <text>{{ type.label }}</text>
+            </view>
+          </view>
+        </scroll-view>
+
         <view class="base-items">
           <view
             v-for="item in baseItems"
@@ -184,54 +202,53 @@
           </view>
         </view>
 
-        <view class="section-head craft-title">
-          <text class="section-title">装备合成</text>
+        <view class="equip-summary">
+          <text>{{ visibleEquipItems.length }} / {{ equipItems.length }}</text>
         </view>
-        <view class="craft-board">
-          <view class="corner">↘</view>
-          <view class="top-axis">
-            <view
-              v-for="item in baseItems"
-              :key="`top-${item.key}`"
-              :class="['axis-icon', item.bg]"
-            >
+
+        <view class="equip-list">
+          <view
+            v-for="item in visibleEquipItems"
+            :key="item.id"
+            class="equip-row-card"
+          >
+            <view class="equip-formula">
               <image
-                v-if="item.picture"
+                v-if="item.componentA?.picture"
+                :src="item.componentA.picture"
+                mode="aspectFit"
+                class="equip-formula-icon"
+              ></image>
+              <view v-else class="equip-formula-icon empty">
+                <image
+                  v-if="item.picture"
+                  :src="item.picture"
+                  mode="aspectFit"
+                  class="data-icon"
+                ></image>
+              </view>
+              <text v-if="item.hasRecipe" class="formula-symbol">+</text>
+              <image
+                v-if="item.hasRecipe && item.componentB?.picture"
+                :src="item.componentB.picture"
+                mode="aspectFit"
+                class="equip-formula-icon"
+              ></image>
+              <text v-if="item.hasRecipe" class="formula-symbol">=</text>
+              <image
+                v-if="item.hasRecipe && item.picture"
                 :src="item.picture"
                 mode="aspectFit"
-                class="data-icon"
+                class="equip-formula-icon result"
               ></image>
-              <text v-else>{{ item.label }}</text>
             </view>
-          </view>
-          <view class="left-axis">
-            <view
-              v-for="item in baseItems"
-              :key="`left-${item.key}`"
-              :class="['axis-icon', item.bg]"
-            >
-              <image
-                v-if="item.picture"
-                :src="item.picture"
-                mode="aspectFit"
-                class="data-icon"
-              ></image>
-              <text v-else>{{ item.label }}</text>
-            </view>
-          </view>
-          <view class="recipe-grid">
-            <view
-              v-for="recipe in recipes"
-              :key="recipe.key"
-              :class="['recipe-icon', recipe.bg]"
-            >
-              <image
-                v-if="recipe.picture"
-                :src="recipe.picture"
-                mode="aspectFit"
-                class="data-icon"
-              ></image>
-              <text v-else>{{ recipe.label }}</text>
+            <view class="equip-copy">
+              <view class="equip-title-line">
+                <text class="equip-name">{{ item.name }}</text>
+                <text class="equip-type-label">{{ item.displayType }}</text>
+              </view>
+              <text v-if="item.basicDesc" class="equip-basic">{{ item.basicDesc }}</text>
+              <text class="equip-desc">{{ item.desc || item.basicDesc || '暂无装备说明' }}</text>
             </view>
           </view>
         </view>
@@ -492,6 +509,16 @@ export default {
         { value: "3", label: "道具类" },
         { value: "4", label: "功能类" },
       ],
+      activeEquipType: "基础装备",
+      equipTypeFilters: [
+        { value: "基础装备", label: "基础装备" },
+        { value: "成型装备", label: "成型装备" },
+        { value: "光明装备", label: "光明装备" },
+        { value: "辅助装备", label: "辅助装备" },
+        { value: "神器装备", label: "神器装备" },
+        { value: "纹章", label: "纹章" },
+        { value: "特殊装备", label: "特殊装备" },
+      ],
       heroes: [
         { name: "崔斯特", views: "12.3万", cost: "1", bg: "hero-one" },
         { name: "伊泽瑞尔", views: "8.7万", cost: "1", bg: "hero-two" },
@@ -528,6 +555,7 @@ export default {
       ],
       baseItems,
       equipRecipes: [],
+      equipItems: [],
       runes: [
         {
           name: "经济扩张",
@@ -610,6 +638,11 @@ export default {
     visibleRunes() {
       if (!this.activeRuneLevel) return this.runes;
       return this.runes.filter((rune) => rune.level === this.activeRuneLevel);
+    },
+    visibleEquipItems() {
+      return this.equipItems.filter(
+        (item) => item.displayType === this.activeEquipType,
+      );
     },
     allGodWishes() {
       return this.gods.flatMap((god) => god.wishes || []);
@@ -885,6 +918,42 @@ export default {
 
       this.baseItems = nextBaseItems.length ? nextBaseItems : baseItems;
       this.equipRecipes = this.buildRecipes(items);
+      this.equipItems = this.mapEquipItems(items);
+    },
+    mapEquipItems(items) {
+      const itemMap = new Map(
+        items.map((item) => [compactText(item.id), item]),
+      );
+      return items
+        .map((item, index) => {
+          const displayType = this.normalizeEquipType(item.type);
+          const componentA = itemMap.get(compactText(item.synthesis1));
+          const componentB = itemMap.get(compactText(item.synthesis2));
+          const hasRecipe = Boolean(componentA && componentB);
+          return {
+            id: compactText(item.id, `equip-${index}`),
+            name: compactText(item.name),
+            picture: item.picture,
+            basicDesc: compactText(item.basicDesc),
+            desc: compactText(item.desc),
+            rawType: compactText(item.type),
+            displayType,
+            componentA,
+            componentB,
+            hasRecipe,
+            sort: Number(item.mapID || item.sort || index),
+          };
+        })
+        .filter((item) => item.name && item.displayType)
+        .sort((a, b) => a.sort - b.sort || a.name.localeCompare(b.name));
+    },
+    normalizeEquipType(type) {
+      const value = compactText(type);
+      if (value === "-1") return "特殊装备";
+      if (value === "光明武器") return "光明装备";
+      if (value === "转职纹章") return "纹章";
+      if (value.includes("辅助")) return "辅助装备";
+      return value;
     },
     buildRecipes(items) {
       const recipeMap = new Map();
@@ -2064,6 +2133,7 @@ export default {
   display: flex;
   flex-wrap: wrap;
   gap: 12rpx;
+  margin-top: 18rpx;
 }
 
 .equip-icon,
@@ -2085,6 +2155,139 @@ export default {
   width: 58rpx;
   height: 58rpx;
   font-size: 19rpx;
+}
+
+.equip-type-scroll {
+  width: 100%;
+  margin-bottom: 18rpx;
+  white-space: nowrap;
+}
+
+.equip-type-row {
+  display: flex;
+  gap: 12rpx;
+}
+
+.equip-type-pill {
+  flex: 0 0 auto;
+  height: 60rpx;
+  padding: 0 20rpx;
+  border: 1rpx solid rgba(221, 166, 100, 0.28);
+  border-radius: 14rpx;
+  color: rgba(245, 230, 203, 0.72);
+  font-size: 22rpx;
+  font-weight: 900;
+  line-height: 60rpx;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.equip-type-pill.active {
+  color: #241426;
+  border-color: rgba(255, 224, 163, 0.88);
+  background: linear-gradient(135deg, #ffe0a3, #c48b43);
+}
+
+.equip-summary {
+  margin: 18rpx 0 16rpx;
+  color: rgba(235, 214, 194, 0.58);
+  font-size: 22rpx;
+  font-weight: 900;
+}
+
+.equip-list {
+  display: grid;
+  gap: 14rpx;
+}
+
+.equip-row-card {
+  display: grid;
+  grid-template-columns: 212rpx minmax(0, 1fr);
+  gap: 18rpx;
+  min-height: 138rpx;
+  padding: 18rpx;
+  border: 1rpx solid rgba(221, 166, 100, 0.24);
+  border-radius: 16rpx;
+  background: #432881;
+}
+
+.equip-formula {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  min-width: 0;
+}
+
+.equip-formula-icon {
+  flex: 0 0 auto;
+  width: 46rpx;
+  height: 46rpx;
+  overflow: hidden;
+  border: 2rpx solid rgba(231, 191, 132, 0.5);
+  border-radius: 4rpx;
+  background: rgba(18, 9, 27, 0.38);
+}
+
+.equip-formula-icon.empty {
+  width: 58rpx;
+  height: 58rpx;
+}
+
+.equip-formula-icon.result {
+  width: 54rpx;
+  height: 54rpx;
+  border-color: rgba(255, 224, 163, 0.72);
+}
+
+.formula-symbol {
+  color: rgba(245, 230, 203, 0.34);
+  font-size: 24rpx;
+  font-weight: 900;
+}
+
+.equip-copy {
+  min-width: 0;
+}
+
+.equip-title-line {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.equip-name {
+  min-width: 0;
+  overflow: hidden;
+  color: #ffe267;
+  font-size: 24rpx;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.equip-type-label {
+  flex: 0 0 auto;
+  height: 32rpx;
+  padding: 0 10rpx;
+  border-radius: 9rpx;
+  color: #fff2dc;
+  font-size: 18rpx;
+  font-weight: 900;
+  line-height: 32rpx;
+  background: rgba(22, 9, 28, 0.34);
+}
+
+.equip-basic,
+.equip-desc {
+  display: block;
+  margin-top: 8rpx;
+  color: rgba(245, 230, 203, 0.72);
+  font-size: 21rpx;
+  line-height: 31rpx;
+}
+
+.equip-basic {
+  color: #d7bdff;
+  font-weight: 900;
 }
 
 .craft-title {
