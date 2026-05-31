@@ -292,10 +292,52 @@
       </view>
 
       <view v-else class="tab-panel god-panel">
-        <view class="god-mobile-hero">
-          <text class="god-kicker">星神</text>
-          <text class="god-title">神明奖励</text>
-          <text class="god-desc">按类别检索每个阶段可获得的神明愿望。</text>
+        <scroll-view scroll-x class="god-selector-scroll">
+          <view class="god-selector-row">
+            <view
+              v-for="god in godFilters"
+              :key="god.value"
+              :class="[
+                'god-select-card',
+                activeGodId === god.value ? 'active' : '',
+              ]"
+              @tap="activeGodId = god.value"
+            >
+              <image
+                v-if="god.iconUrl"
+                :src="god.iconUrl"
+                mode="aspectFit"
+                class="god-select-icon"
+              ></image>
+              <view class="god-select-copy">
+                <text>{{ god.label }}</text>
+                <text>{{ god.subTitle }}</text>
+              </view>
+            </view>
+          </view>
+        </scroll-view>
+
+        <view class="god-profile-card">
+          <image
+            v-if="selectedGod.iconUrl"
+            :src="selectedGod.iconUrl"
+            mode="aspectFit"
+            class="god-profile-art"
+          ></image>
+          <view class="god-profile-mask"></view>
+          <view class="god-profile-content">
+            <image
+              v-if="selectedGod.iconUrl"
+              :src="selectedGod.iconUrl"
+              mode="aspectFit"
+              class="god-profile-icon"
+            ></image>
+            <view>
+              <text class="god-profile-name">{{ selectedGod.shortName || selectedGod.name }}</text>
+              <text class="god-profile-sub">{{ selectedGod.title }}</text>
+            </view>
+          </view>
+          <text class="god-profile-tip">查看该神明在不同阶段可能出现的恩赐效果</text>
         </view>
 
         <view class="god-filter-panel">
@@ -308,21 +350,6 @@
               placeholder-class="placeholder"
             />
           </view>
-          <scroll-view scroll-x class="god-filter-scroll">
-            <view class="god-filter-row">
-              <view
-                v-for="god in godFilters"
-                :key="god.value"
-                :class="[
-                  'god-filter-pill',
-                  activeGodId === god.value ? 'active' : '',
-                ]"
-                @tap="activeGodId = god.value"
-              >
-                <text>{{ god.label }}</text>
-              </view>
-            </view>
-          </scroll-view>
           <scroll-view scroll-x class="god-category-scroll">
             <view class="god-category-row">
               <view
@@ -343,39 +370,49 @@
           >
         </view>
 
-        <view class="god-list">
+        <view class="god-stage-list">
           <view
-            v-for="wish in visibleGodWishes"
-            :key="wish.id"
-            class="god-card"
+            v-for="stage in godStageGroups"
+            :key="stage.stage"
+            class="god-stage-card"
           >
-            <view class="god-card-top">
-              <image
-                v-if="wish.icon"
-                :src="wish.icon"
-                mode="aspectFit"
-                class="god-wish-icon"
-              ></image>
-              <view v-else :class="['god-wish-icon', wish.tone]">{{
-                wish.iconText
-              }}</view>
-              <view class="god-card-title">
-                <text class="god-name">{{ wish.name }}</text>
-                <text class="god-source"
-                  >{{ wish.godName }} · {{ wish.stage }}阶段</text
-                >
+            <view class="god-stage-head">
+              <text class="god-stage-badge">{{ stage.stage }}阶段</text>
+              <text class="god-stage-count">{{ stage.wishes.length }}项恩赐</text>
+            </view>
+            <view class="god-stage-divider"></view>
+            <view class="god-wish-list">
+              <view
+                v-for="wish in stage.wishes"
+                :key="wish.id"
+                class="god-wish-row"
+              >
+                <view class="god-wish-row-top">
+                  <image
+                    v-if="wish.icon"
+                    :src="wish.icon"
+                    mode="aspectFit"
+                    class="god-wish-icon"
+                  ></image>
+                  <view v-else :class="['god-wish-icon', wish.tone]">{{
+                    wish.iconText
+                  }}</view>
+                  <view class="god-card-title">
+                    <text class="god-name">{{ wish.name }}</text>
+                    <view class="god-tags">
+                      <text
+                        v-for="tag in wish.tags"
+                        :key="`${wish.id}-${tag.value}`"
+                        :class="['god-tag', tag.className]"
+                      >
+                        {{ tag.label }}
+                      </text>
+                    </view>
+                  </view>
+                </view>
+                <text class="god-tip">{{ wish.desc }}</text>
               </view>
             </view>
-            <view class="god-tags">
-              <text
-                v-for="tag in wish.tags"
-                :key="`${wish.id}-${tag.value}`"
-                :class="['god-tag', tag.className]"
-              >
-                {{ tag.label }}
-              </text>
-            </view>
-            <text class="god-tip">{{ wish.desc }}</text>
           </view>
         </view>
       </view>
@@ -662,18 +699,29 @@ export default {
       return this.gods.flatMap((god) => god.wishes || []);
     },
     godFilters() {
-      return [
-        { value: "", label: "全部星神" },
-        ...this.gods.map((god) => ({
-          value: String(god.id),
-          label: god.shortName || god.name,
-        })),
-      ];
+      return this.gods.map((god) => ({
+        value: String(god.id),
+        label: god.shortName || god.name,
+        subTitle: god.title,
+        iconUrl: god.iconUrl,
+      }));
+    },
+    selectedGod() {
+      return (
+        this.gods.find((god) => String(god.id) === this.activeGodId) ||
+        this.gods[0] || {
+          id: "",
+          name: "",
+          shortName: "",
+          title: "",
+          iconUrl: "",
+          wishes: [],
+        }
+      );
     },
     visibleGodWishes() {
       const keyword = this.godKeyword.trim();
-      return this.allGodWishes.filter((wish) => {
-        const matchesGod = !this.activeGodId || wish.godId === this.activeGodId;
+      return (this.selectedGod.wishes || []).filter((wish) => {
         const matchesCategory =
           !this.activeGodCategory ||
           wish.typeIds.includes(this.activeGodCategory);
@@ -682,8 +730,18 @@ export default {
           wish.name.includes(keyword) ||
           wish.godName.includes(keyword) ||
           wish.desc.includes(keyword);
-        return matchesGod && matchesCategory && matchesKeyword;
+        return matchesCategory && matchesKeyword;
       });
+    },
+    godStageGroups() {
+      const groups = new Map();
+      this.visibleGodWishes.forEach((wish) => {
+        if (!groups.has(wish.stage)) groups.set(wish.stage, []);
+        groups.get(wish.stage).push(wish);
+      });
+      return Array.from(groups.entries())
+        .sort((a, b) => Number(a[0]) - Number(b[0]))
+        .map(([stage, wishes]) => ({ stage, wishes }));
     },
     visibleHeroes() {
       const keyword = this.heroKeyword.trim();
@@ -755,6 +813,9 @@ export default {
         this.setEquips(equips.items || []);
         this.runes = this.mapRunes(hexes.items || []);
         this.gods = this.mapGods(gods.items || []);
+        if (!this.activeGodId && this.gods.length) {
+          this.activeGodId = String(this.gods[0].id);
+        }
       } catch (error) {
         this.loadError = "Season API request failed";
       } finally {
@@ -1030,6 +1091,7 @@ export default {
           id: god.godId,
           name: godName,
           shortName: godName.split(" ")[0],
+          title: godName.split(" ").slice(1).join(" ") || compactText(god.godTips),
           icon: firstChar(godName),
           iconUrl: god.godIcon || god.tex,
           tip: compactText(god.godTips),
@@ -1052,6 +1114,7 @@ export default {
             iconText: firstChar(wish.name),
             godName,
             stage: compactText(stage.num),
+            stageNum: Number(stage.num || 0),
             typeIds,
             tags: typeIds.map((type) => this.mapGodWishType(type)),
             tone,
@@ -1424,8 +1487,7 @@ export default {
 .hero-meta,
 .views,
 .trait-card,
-.trait-top,
-.god-card {
+.trait-top {
   display: flex;
   align-items: center;
 }
@@ -2410,59 +2472,140 @@ export default {
   line-height: 33rpx;
 }
 
-.god-mobile-hero {
-  position: relative;
-  min-height: 220rpx;
-  overflow: hidden;
-  padding: 30rpx;
-  border: 1rpx solid rgba(221, 166, 100, 0.44);
-  border-radius: 20rpx;
-  background:
-    linear-gradient(90deg, rgba(104, 75, 190, 0.96), rgba(104, 75, 190, 0.48)),
-    radial-gradient(
-      circle at 86% 28%,
-      rgba(255, 205, 130, 0.58),
-      transparent 22%
-    ),
-    linear-gradient(135deg, #25123a, #684bbe 58%, #16091f);
-}
-
-.god-kicker,
-.god-title,
-.god-desc,
 .god-summary {
   display: block;
 }
 
-.god-kicker {
-  width: 160rpx;
-  height: 52rpx;
-  border: 1rpx solid rgba(255, 227, 165, 0.42);
-  border-radius: 12rpx;
+.god-selector-scroll {
+  width: 100%;
+  white-space: nowrap;
+}
+
+.god-selector-row {
+  display: flex;
+  gap: 18rpx;
+}
+
+.god-select-card {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  flex: 0 0 310rpx;
+  min-height: 118rpx;
+  padding: 20rpx;
+  border: 2rpx solid transparent;
+  border-radius: 24rpx;
+  background: rgba(67, 40, 129, 0.72);
+}
+
+.god-select-card.active {
+  border-color: #d8a84f;
+  background: rgba(104, 75, 190, 0.52);
+}
+
+.god-select-icon {
+  flex: 0 0 auto;
+  width: 86rpx;
+  height: 74rpx;
+}
+
+.god-select-copy {
+  min-width: 0;
+}
+
+.god-select-copy text {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.god-select-copy text:first-child {
   color: #fff2dc;
-  font-size: 25rpx;
-  font-weight: 900;
-  line-height: 52rpx;
-  text-align: center;
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.god-title {
-  margin-top: 28rpx;
-  color: #fff1d5;
-  font-size: 44rpx;
+  font-size: 27rpx;
   font-weight: 900;
 }
 
-.god-desc {
-  margin-top: 12rpx;
-  color: rgba(247, 229, 203, 0.72);
+.god-select-copy text:last-child {
+  margin-top: 6rpx;
+  color: rgba(245, 230, 203, 0.62);
+  font-size: 22rpx;
+  font-weight: 800;
+}
+
+.god-profile-card {
+  position: relative;
+  min-height: 340rpx;
+  margin-top: 26rpx;
+  overflow: hidden;
+  border-radius: 26rpx;
+  background: #432881;
+}
+
+.god-profile-art {
+  position: absolute;
+  right: -30rpx;
+  top: -40rpx;
+  width: 560rpx;
+  height: 360rpx;
+  opacity: 0.9;
+}
+
+.god-profile-mask {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(22, 9, 28, 0.86), rgba(22, 9, 28, 0.34)),
+    linear-gradient(180deg, rgba(22, 9, 28, 0.04), rgba(22, 9, 28, 0.82));
+}
+
+.god-profile-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+  padding: 140rpx 34rpx 0;
+}
+
+.god-profile-icon {
+  width: 96rpx;
+  height: 96rpx;
+  border: 2rpx solid rgba(255, 224, 163, 0.28);
+  border-radius: 18rpx;
+  background: rgba(22, 9, 28, 0.32);
+}
+
+.god-profile-name,
+.god-profile-sub,
+.god-profile-tip {
+  display: block;
+  position: relative;
+  z-index: 1;
+}
+
+.god-profile-name {
+  color: #fff2dc;
+  font-size: 36rpx;
+  font-weight: 900;
+}
+
+.god-profile-sub {
+  margin-top: 4rpx;
+  color: rgba(245, 230, 203, 0.66);
   font-size: 24rpx;
-  line-height: 36rpx;
+  font-weight: 800;
+}
+
+.god-profile-tip {
+  padding: 30rpx 34rpx 34rpx;
+  color: rgba(245, 230, 203, 0.78);
+  font-size: 25rpx;
+  line-height: 38rpx;
 }
 
 .god-filter-panel {
-  margin-top: 18rpx;
+  margin-top: 20rpx;
   padding: 18rpx;
   border: 1rpx solid rgba(221, 166, 100, 0.26);
   border-radius: 18rpx;
@@ -2487,20 +2630,17 @@ export default {
   font-weight: 800;
 }
 
-.god-filter-scroll,
 .god-category-scroll {
   width: 100%;
   margin-top: 16rpx;
   white-space: nowrap;
 }
 
-.god-filter-row,
 .god-category-row {
   display: flex;
   gap: 12rpx;
 }
 
-.god-filter-pill,
 .god-category-pill {
   flex: 0 0 auto;
   min-width: 118rpx;
@@ -2516,14 +2656,6 @@ export default {
   background: rgba(22, 9, 28, 0.26);
 }
 
-.god-filter-pill {
-  min-width: 150rpx;
-  border-color: rgba(167, 132, 255, 0.34);
-  color: #fff2dc;
-  background: rgba(104, 75, 190, 0.48);
-}
-
-.god-filter-pill.active,
 .god-category-pill.active {
   color: #241426;
   border-color: rgba(255, 224, 163, 0.88);
@@ -2537,22 +2669,66 @@ export default {
   font-weight: 900;
 }
 
-.god-list {
+.god-stage-list {
   display: grid;
-  gap: 18rpx;
-  margin-top: 22rpx;
+  gap: 26rpx;
+  margin-top: 26rpx;
 }
 
-.god-card {
-  display: block;
-  min-height: 0;
-  padding: 22rpx;
+.god-stage-card {
+  padding: 28rpx;
   border: 1rpx solid rgba(221, 166, 100, 0.24);
-  border-radius: 18rpx;
-  background: #432881;
+  border-radius: 26rpx;
+  background: rgba(67, 40, 129, 0.84);
 }
 
-.god-card-top {
+.god-stage-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.god-stage-badge {
+  height: 58rpx;
+  min-width: 118rpx;
+  padding: 0 22rpx;
+  border-radius: 999rpx;
+  color: #ffe267;
+  font-size: 28rpx;
+  font-weight: 900;
+  line-height: 58rpx;
+  text-align: center;
+  background: rgba(196, 139, 67, 0.58);
+}
+
+.god-stage-count {
+  color: rgba(245, 230, 203, 0.62);
+  font-size: 23rpx;
+  font-weight: 800;
+}
+
+.god-stage-divider {
+  height: 1rpx;
+  margin: 28rpx 0;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.god-wish-list {
+  display: grid;
+  gap: 28rpx;
+}
+
+.god-wish-row {
+  padding-bottom: 28rpx;
+  border-bottom: 1rpx solid rgba(255, 255, 255, 0.08);
+}
+
+.god-wish-row:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.god-wish-row-top {
   display: flex;
   align-items: center;
   gap: 16rpx;
