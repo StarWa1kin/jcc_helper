@@ -349,6 +349,7 @@
 
 <script>
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000').replace(/\/$/, '');
+const HERO_DETAIL_IMAGE_BASE = 'https://game.gtimg.cn/images/jk/jkimg/mode17s18/1624x750/';
 const tonePalette = ['tone-gold', 'tone-blue', 'tone-violet', 'tone-rose'];
 const heroPalette = ['hero-one', 'hero-two', 'hero-three', 'hero-four', 'hero-five', 'hero-six'];
 const itemPalette = ['bg-sword', 'bg-bow', 'bg-rod', 'bg-tear', 'bg-vest', 'bg-cloak', 'bg-belt', 'bg-glove', 'bg-pan', 'bg-spatula'];
@@ -393,6 +394,11 @@ function splitIds(value) {
     .split('|')
     .map((item) => compactText(item))
     .filter((item) => item && item !== '-1' && item !== '0');
+}
+
+function buildHeroDetailImage(hero) {
+  const heroPaint = compactText(hero?.heroPaint);
+  return heroPaint ? `${HERO_DETAIL_IMAGE_BASE}${heroPaint}.jpg` : '';
 }
 
 const baseItems = [
@@ -513,7 +519,7 @@ export default {
       return {
         ...this.selectedHero,
         raw,
-        picture: raw.picture || this.selectedHero.picture,
+        picture: buildHeroDetailImage(raw) || raw.picture || this.selectedHero.picture,
         skillName: compactText(raw.skillName, this.selectedHero.skillName),
         starLabel: current.label,
       };
