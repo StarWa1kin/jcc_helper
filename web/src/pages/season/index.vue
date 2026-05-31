@@ -27,7 +27,16 @@
     </view>
 
     <scroll-view scroll-y class="content-scroll">
-      <view v-if="activeTab === 'heroes'" class="tab-panel hero-panel">
+      <view v-if="loading" class="state-card">
+        <text>Loading season data...</text>
+      </view>
+
+      <view v-else-if="loadError" class="state-card error" @tap="loadSeasonData">
+        <text>{{ loadError }}</text>
+        <text class="retry-text">Tap to retry</text>
+      </view>
+
+      <view v-else-if="activeTab === 'heroes'" class="tab-panel hero-panel">
         <view class="search-box">
           <text class="search-icon">⌕</text>
           <input
@@ -40,11 +49,32 @@
         </view>
 
         <view class="filter-row">
-          <view v-for="filter in heroFilters" :key="filter.label" class="filter-pill">
+          <view
+            v-for="filter in heroFilters"
+            :key="filter.key"
+            :class="['filter-pill', activeHeroFilter === filter.key ? 'active' : '', heroFilterValue(filter.key) ? 'selected' : '']"
+            @tap="toggleHeroFilter(filter.key)"
+          >
             <text class="filter-icon">{{ filter.icon }}</text>
-            <text>{{ filter.label }}</text>
+            <text class="filter-label">{{ heroFilterLabel(filter) }}</text>
             <text class="chevron">⌄</text>
           </view>
+        </view>
+
+        <view v-if="activeHeroFilter" class="filter-panel">
+          <view
+            v-for="option in activeHeroFilterOptions"
+            :key="option.value"
+            :class="['filter-option', heroFilterValue(activeHeroFilter) === option.value ? 'active' : '']"
+            @tap="selectHeroFilter(activeHeroFilter, option.value)"
+          >
+            <text>{{ option.label }}</text>
+          </view>
+        </view>
+
+        <view class="hero-summary">
+          <text>{{ visibleHeroes.length }} / {{ heroes.length }}</text>
+          <text v-if="hasHeroFilter" class="clear-filter" @tap="resetHeroFilters">重置筛选</text>
         </view>
 
         <view class="guide-card">
@@ -65,11 +95,17 @@
           </view>
         </view>
 
-        <view class="hero-grid">
-          <view v-for="hero in visibleHeroes" :key="hero.name" class="hero-card">
-            <view :class="['hero-bg', hero.bg]"></view>
+        <view v-if="visibleHeroes.length" class="hero-grid">
+          <view v-for="hero in visibleHeroes" :key="hero.id || hero.name" class="hero-card" @tap="openHeroDetail(hero)">
+            <view
+              :class="['hero-bg', hero.bg, hero.picture ? 'remote-image' : '']"
+              :style="hero.picture ? { backgroundImage: `url(${hero.picture})` } : {}"
+            ></view>
             <view class="hero-shade"></view>
             <view class="cost-badge">{{ hero.cost }}</view>
+            <view class="hero-tags">
+              <text v-for="tag in hero.cardTags" :key="tag">{{ tag }}</text>
+            </view>
             <view class="hero-meta">
               <text class="hero-name">{{ hero.name }}</text>
               <view class="views">
@@ -79,6 +115,10 @@
             </view>
           </view>
         </view>
+
+        <view v-else class="empty-card">
+          <text>没有匹配的英雄</text>
+        </view>
       </view>
 
       <view v-else-if="activeTab === 'traits'" class="tab-panel trait-panel">
@@ -87,8 +127,11 @@
           <text class="section-sub">按职业与特质快速查看等级收益</text>
         </view>
         <view class="trait-list">
-          <view v-for="trait in traits" :key="trait.name" class="trait-card">
-            <view :class="['trait-emblem', trait.tone]">{{ trait.icon }}</view>
+          <view v-for="trait in traits" :key="trait.id || trait.name" class="trait-card">
+            <view :class="['trait-emblem', trait.tone]">
+              <image v-if="trait.picture" :src="trait.picture" mode="aspectFit" class="data-icon"></image>
+              <text v-else>{{ trait.icon }}</text>
+            </view>
             <view class="trait-main">
               <view class="trait-top">
                 <text class="trait-name">{{ trait.name }}</text>
@@ -109,7 +152,8 @@
         </view>
         <view class="base-items">
           <view v-for="item in baseItems" :key="item.key" :class="['equip-icon', item.bg]">
-            <text>{{ item.label }}</text>
+            <image v-if="item.picture" :src="item.picture" mode="aspectFit" class="data-icon"></image>
+            <text v-else>{{ item.label }}</text>
           </view>
         </view>
 
@@ -120,17 +164,20 @@
           <view class="corner">↘</view>
           <view class="top-axis">
             <view v-for="item in baseItems" :key="`top-${item.key}`" :class="['axis-icon', item.bg]">
-              <text>{{ item.label }}</text>
+              <image v-if="item.picture" :src="item.picture" mode="aspectFit" class="data-icon"></image>
+              <text v-else>{{ item.label }}</text>
             </view>
           </view>
           <view class="left-axis">
             <view v-for="item in baseItems" :key="`left-${item.key}`" :class="['axis-icon', item.bg]">
-              <text>{{ item.label }}</text>
+              <image v-if="item.picture" :src="item.picture" mode="aspectFit" class="data-icon"></image>
+              <text v-else>{{ item.label }}</text>
             </view>
           </view>
           <view class="recipe-grid">
             <view v-for="recipe in recipes" :key="recipe.key" :class="['recipe-icon', recipe.bg]">
-              <text>{{ recipe.label }}</text>
+              <image v-if="recipe.picture" :src="recipe.picture" mode="aspectFit" class="data-icon"></image>
+              <text v-else>{{ recipe.label }}</text>
             </view>
           </view>
         </view>
@@ -142,8 +189,11 @@
           <text class="section-sub">按经济、战力、转职和专属分类</text>
         </view>
         <view class="rune-grid">
-          <view v-for="rune in runes" :key="rune.name" class="rune-card">
-            <view :class="['rune-mark', rune.tone]">{{ rune.icon }}</view>
+          <view v-for="rune in runes" :key="rune.id || rune.name" class="rune-card">
+            <view :class="['rune-mark', rune.tone]">
+              <image v-if="rune.iconUrl" :src="rune.iconUrl" mode="aspectFit" class="data-icon"></image>
+              <text v-else>{{ rune.icon }}</text>
+            </view>
             <text class="rune-name">{{ rune.name }}</text>
             <text class="rune-desc">{{ rune.desc }}</text>
             <view class="rune-tags">
@@ -160,8 +210,11 @@
           <text class="god-desc">查看神明机制、选择建议和阵容适配关系。</text>
         </view>
         <view class="god-list">
-          <view v-for="god in gods" :key="god.name" class="god-card">
-            <view :class="['god-icon', god.tone]">{{ god.icon }}</view>
+          <view v-for="god in gods" :key="god.id || god.name" class="god-card">
+            <view :class="['god-icon', god.tone]">
+              <image v-if="god.iconUrl" :src="god.iconUrl" mode="aspectFit" class="data-icon"></image>
+              <text v-else>{{ god.icon }}</text>
+            </view>
             <view>
               <text class="god-name">{{ god.name }}</text>
               <text class="god-tip">{{ god.tip }}</text>
@@ -171,10 +224,112 @@
         </view>
       </view>
     </scroll-view>
+
+    <view v-if="selectedHero" class="detail-mask" @tap="closeHeroDetail">
+      <view class="hero-detail" @tap.stop>
+        <view class="detail-visual">
+          <view
+            :class="['detail-portrait', activeSelectedHero.picture ? 'remote-image' : activeSelectedHero.bg]"
+            :style="activeSelectedHero.picture ? { backgroundImage: `url(${activeSelectedHero.picture})` } : {}"
+          ></view>
+          <view class="detail-cover"></view>
+          <button class="detail-close" hover-class="button-hover" @tap="closeHeroDetail">×</button>
+          <view class="detail-title">
+            <text class="detail-cost">{{ activeSelectedHero.cost }}费</text>
+            <text class="detail-name">{{ activeSelectedHero.name }}</text>
+            <text class="detail-sub">{{ activeSelectedHero.starLabel }} · {{ activeSelectedHero.skillName || activeSelectedHero.raw.tftHeroId }}</text>
+          </view>
+        </view>
+
+        <scroll-view scroll-y class="detail-scroll">
+          <view v-if="selectedHeroStarOptions.length > 1" class="star-switch">
+            <view
+              v-for="(star, index) in selectedHeroStarOptions"
+              :key="star.key"
+              :class="['star-chip', selectedHeroStarIndex === index ? 'active' : '']"
+              @tap="selectedHeroStarIndex = index"
+            >
+              <text>{{ star.label }}</text>
+            </view>
+          </view>
+
+          <view class="detail-section">
+            <text class="detail-section-title">职业特质</text>
+            <view class="detail-chip-row">
+              <text v-for="name in selectedHero.traitNames" :key="`trait-${name}`" class="detail-chip trait">{{ name }}</text>
+              <text v-for="name in selectedHero.classNames" :key="`class-${name}`" class="detail-chip role">{{ name }}</text>
+            </view>
+          </view>
+
+          <view class="detail-section">
+            <text class="detail-section-title">技能</text>
+            <text class="detail-desc">{{ activeSelectedHero.raw.skillDesc || '暂无技能描述' }}</text>
+            <text v-if="activeSelectedHero.raw.skillValueDesc" class="detail-value">{{ activeSelectedHero.raw.skillValueDesc }}</text>
+          </view>
+
+          <view class="detail-section">
+            <text class="detail-section-title">基础属性</text>
+            <view class="stat-grid">
+              <view v-for="stat in selectedHeroStats" :key="stat.label" class="stat-cell">
+                <text class="stat-label">{{ stat.label }}</text>
+                <text class="stat-value">{{ stat.value }}</text>
+              </view>
+            </view>
+          </view>
+        </scroll-view>
+      </view>
+    </view>
   </view>
 </template>
 
 <script>
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000').replace(/\/$/, '');
+const tonePalette = ['tone-gold', 'tone-blue', 'tone-violet', 'tone-rose'];
+const heroPalette = ['hero-one', 'hero-two', 'hero-three', 'hero-four', 'hero-five', 'hero-six'];
+const itemPalette = ['bg-sword', 'bg-bow', 'bg-rod', 'bg-tear', 'bg-vest', 'bg-cloak', 'bg-belt', 'bg-glove', 'bg-pan', 'bg-spatula'];
+
+function requestApi(path, params = {}) {
+  return new Promise((resolve, reject) => {
+    uni.request({
+      url: `${API_BASE_URL}${path}`,
+      method: 'GET',
+      data: params,
+      success: (res) => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          resolve(res.data || {});
+          return;
+        }
+        reject(new Error(`HTTP ${res.statusCode}`));
+      },
+      fail: reject,
+    });
+  });
+}
+
+function compactText(value, fallback = '') {
+  if (value === undefined || value === null) return fallback;
+  return String(value).replace(/\s+/g, ' ').trim() || fallback;
+}
+
+function firstChar(value, fallback = '?') {
+  return compactText(value, fallback).slice(0, 1) || fallback;
+}
+
+function splitLevels(value) {
+  return compactText(value)
+    .split(/[|#]/)
+    .map((item) => compactText(item))
+    .filter(Boolean)
+    .slice(0, 4);
+}
+
+function splitIds(value) {
+  return compactText(value)
+    .split('|')
+    .map((item) => compactText(item))
+    .filter((item) => item && item !== '-1' && item !== '0');
+}
+
 const baseItems = [
   { key: 'sword', label: '剑', bg: 'bg-sword' },
   { key: 'bow', label: '弓', bg: 'bg-bow' },
@@ -206,6 +361,20 @@ export default {
     return {
       activeTab: 'heroes',
       heroKeyword: '',
+      activeHeroFilter: '',
+      selectedHero: null,
+      selectedHeroStarIndex: 0,
+      loading: false,
+      loadError: '',
+      seasonMeta: null,
+      heroFiltersValue: {
+        cost: '',
+        class: '',
+        trait: '',
+      },
+      heroClassOptions: [],
+      heroTraitOptions: [],
+      traitNameMap: {},
       tabs: [
         { key: 'heroes', label: '英雄', icon: '♜' },
         { key: 'traits', label: '羁绊', icon: '❖' },
@@ -214,9 +383,9 @@ export default {
         { key: 'gods', label: '神明', icon: '✬' },
       ],
       heroFilters: [
-        { icon: '◉', label: '全部费用' },
-        { icon: '⬟', label: '全部职业' },
-        { icon: '⬡', label: '全部特质' },
+        { key: 'cost', icon: '◉', label: '全部费用' },
+        { key: 'class', icon: '⬟', label: '全部职业' },
+        { key: 'trait', icon: '⬡', label: '全部特质' },
       ],
       heroes: [
         { name: '崔斯特', views: '12.3万', cost: '1', bg: 'hero-one' },
@@ -232,6 +401,7 @@ export default {
         { name: '狙神', icon: '狙', count: '2/4', desc: '距离越远伤害越高，适合后排主 C。', levels: ['2: +8%', '4: +18%'], tone: 'tone-violet' },
       ],
       baseItems,
+      equipRecipes: [],
       runes: [
         { name: '经济扩张', icon: '金', desc: '更快成型，适合连胜或高费运营。', tags: ['经济', '运营'], tone: 'tone-gold' },
         { name: '前排壁垒', icon: '盾', desc: '补足坦度，提升阵容启动时间。', tags: ['防御', '前排'], tone: 'tone-blue' },
@@ -246,12 +416,76 @@ export default {
     };
   },
   computed: {
+    hasHeroFilter() {
+      return Boolean(
+        this.heroKeyword.trim()
+          || this.heroFiltersValue.cost
+          || this.heroFiltersValue.class
+          || this.heroFiltersValue.trait,
+      );
+    },
+    activeHeroFilterOptions() {
+      if (this.activeHeroFilter === 'cost') {
+        return [
+          { value: '', label: '全部费用' },
+          ...[1, 2, 3, 4, 5].map((cost) => ({ value: String(cost), label: `${cost}费` })),
+        ];
+      }
+      if (this.activeHeroFilter === 'class') {
+        return [{ value: '', label: '全部职业' }, ...this.heroClassOptions];
+      }
+      if (this.activeHeroFilter === 'trait') {
+        return [{ value: '', label: '全部特质' }, ...this.heroTraitOptions];
+      }
+      return [];
+    },
+    activeSelectedHero() {
+      if (!this.selectedHero) return null;
+      const variants = this.selectedHero.variants || [];
+      const current = variants[this.selectedHeroStarIndex] || variants[0];
+      if (!current) return this.selectedHero;
+      const raw = current.raw || {};
+      return {
+        ...this.selectedHero,
+        raw,
+        picture: raw.picture || this.selectedHero.picture,
+        skillName: compactText(raw.skillName, this.selectedHero.skillName),
+        starLabel: current.label,
+      };
+    },
+    selectedHeroStarOptions() {
+      return this.selectedHero?.variants || [];
+    },
+    selectedHeroStats() {
+      if (!this.activeSelectedHero) return [];
+      const hero = this.activeSelectedHero.raw || {};
+      return [
+        { label: '生命', value: compactText(hero.initHP, '-') },
+        { label: '法力', value: `${compactText(hero.initMP, '0')}/${compactText(hero.maxMP, '0')}` },
+        { label: '攻击', value: compactText(hero.initAttackDamage, '-') },
+        { label: '攻速', value: compactText(hero.attackSpeed, '-') },
+        { label: '护甲', value: compactText(hero.armor, '-') },
+        { label: '魔抗', value: compactText(hero.magicResist, '-') },
+        { label: '射程', value: compactText(hero.attackRange, '-') },
+        { label: '暴击', value: `${compactText(hero.criticalStrikeChance, '-')}%` },
+      ];
+    },
     visibleHeroes() {
       const keyword = this.heroKeyword.trim();
-      if (!keyword) return this.heroes;
-      return this.heroes.filter((hero) => hero.name.includes(keyword));
+      return this.heroes.filter((hero) => {
+        const matchesKeyword = !keyword
+          || hero.name.includes(keyword)
+          || hero.skillName.includes(keyword)
+          || hero.classNames.some((name) => name.includes(keyword))
+          || hero.traitNames.some((name) => name.includes(keyword));
+        const matchesCost = !this.heroFiltersValue.cost || hero.cost === this.heroFiltersValue.cost;
+        const matchesClass = !this.heroFiltersValue.class || hero.classIds.includes(this.heroFiltersValue.class);
+        const matchesTrait = !this.heroFiltersValue.trait || hero.traitIds.includes(this.heroFiltersValue.trait);
+        return matchesKeyword && matchesCost && matchesClass && matchesTrait;
+      });
     },
     recipes() {
+      if (this.equipRecipes.length) return this.equipRecipes;
       const recipes = [];
       this.baseItems.forEach((rowItem, rowIndex) => {
         this.baseItems.forEach((colItem, colIndex) => {
@@ -264,6 +498,246 @@ export default {
         });
       });
       return recipes;
+    },
+  },
+  mounted() {
+    this.loadSeasonData();
+  },
+  methods: {
+    async loadSeasonData() {
+      this.loading = true;
+      this.loadError = '';
+      try {
+        const [heroes, traits, equips, hexes, gods] = await Promise.all([
+          requestApi('/api/heroes', { show_only: true }),
+          requestApi('/api/traits'),
+          requestApi('/api/equips'),
+          requestApi('/api/hexes'),
+          requestApi('/api/gods'),
+        ]);
+
+        const mappedTraits = this.mapTraits(traits.items || []);
+
+        this.seasonMeta = heroes.meta || traits.meta || equips.meta || hexes.meta || gods.meta || null;
+        this.traits = mappedTraits;
+        this.traitNameMap = this.buildTraitNameMap(mappedTraits);
+        this.heroes = this.mapHeroes(heroes.items || []);
+        this.buildHeroFilterOptions(this.heroes);
+        this.setEquips(equips.items || []);
+        this.runes = this.mapRunes(hexes.items || []);
+        this.gods = this.mapGods(gods.items || []);
+      } catch (error) {
+        this.loadError = 'Season API request failed';
+      } finally {
+        this.loading = false;
+      }
+    },
+    toggleHeroFilter(key) {
+      this.activeHeroFilter = this.activeHeroFilter === key ? '' : key;
+    },
+    selectHeroFilter(key, value) {
+      this.heroFiltersValue[key] = value;
+      this.activeHeroFilter = '';
+    },
+    resetHeroFilters() {
+      this.heroKeyword = '';
+      this.heroFiltersValue = {
+        cost: '',
+        class: '',
+        trait: '',
+      };
+      this.activeHeroFilter = '';
+    },
+    openHeroDetail(hero) {
+      this.selectedHero = hero;
+      this.selectedHeroStarIndex = 0;
+    },
+    closeHeroDetail() {
+      this.selectedHero = null;
+      this.selectedHeroStarIndex = 0;
+    },
+    heroFilterValue(key) {
+      return this.heroFiltersValue[key] || '';
+    },
+    heroFilterLabel(filter) {
+      const value = this.heroFilterValue(filter.key);
+      if (!value) return filter.label;
+      if (filter.key === 'cost') return `${value}费`;
+      if (filter.key === 'class') {
+        return this.heroClassOptions.find((option) => option.value === value)?.label || filter.label;
+      }
+      if (filter.key === 'trait') {
+        return this.heroTraitOptions.find((option) => option.value === value)?.label || filter.label;
+      }
+      return filter.label;
+    },
+    mapHeroes(items) {
+      const heroGroups = new Map();
+      items
+        .filter((hero) => {
+          const price = Number(hero.price || 0);
+          return compactText(hero.name) && compactText(hero.showHeroTag, '1') === '1' && price > 0;
+        })
+        .forEach((hero) => {
+          const cost = compactText(hero.price, '0');
+          const classIds = splitIds(hero.class);
+          const traitIds = splitIds(hero.species);
+          const key = [
+            compactText(hero.name),
+            cost,
+            traitIds.join('|'),
+            classIds.join('|'),
+          ].join('__');
+          const star = this.getHeroStar(hero);
+          if (!heroGroups.has(key)) {
+            heroGroups.set(key, { classIds, traitIds, variants: [] });
+          }
+          heroGroups.get(key).variants.push({
+            key: compactText(hero.id, `${key}-${star}`),
+            label: `${star}星`,
+            star,
+            raw: hero,
+          });
+        });
+
+      return Array.from(heroGroups.values())
+        .map((group) => {
+          group.variants.sort((a, b) => a.star - b.star || Number(a.raw.id || 0) - Number(b.raw.id || 0));
+          group.raw = group.variants[0].raw;
+          return group;
+        })
+        .sort((a, b) => Number(a.raw.price || 0) - Number(b.raw.price || 0) || compactText(a.raw.name).localeCompare(compactText(b.raw.name)))
+        .map(({ raw: hero, classIds, traitIds, variants }, index) => ({
+          id: [
+            compactText(hero.name),
+            compactText(hero.price),
+            traitIds.join('|'),
+            classIds.join('|'),
+          ].join('__'),
+          name: compactText(hero.name),
+          views: compactText(hero.skillName, compactText(hero.tftHeroId, '')),
+          skillName: compactText(hero.skillName),
+          cost: compactText(hero.price, '0'),
+          classIds,
+          traitIds,
+          classNames: classIds.map((id) => this.traitNameMap[id] || id),
+          traitNames: traitIds.map((id) => this.traitNameMap[id] || id),
+          cardTags: [
+            ...traitIds.map((id) => this.traitNameMap[id] || id),
+            ...classIds.map((id) => this.traitNameMap[id] || id),
+          ].slice(0, 3),
+          variants,
+          raw: hero,
+          picture: hero.picture,
+          bg: heroPalette[index % heroPalette.length],
+        }));
+    },
+    getHeroStar(hero) {
+      const id = compactText(hero.id);
+      const fromId = Number(id.slice(0, 1));
+      if (fromId >= 1 && fromId <= 4) return fromId;
+      return Number(hero.star || hero.level || 1) || 1;
+    },
+    buildTraitNameMap(traits) {
+      return traits.reduce((map, trait) => {
+        map[trait.id] = trait.name;
+        return map;
+      }, {});
+    },
+    buildHeroFilterOptions(heroes) {
+      const classMap = new Map();
+      const traitMap = new Map();
+      heroes.forEach((hero) => {
+        hero.classIds.forEach((id) => classMap.set(id, this.traitNameMap[id] || id));
+        hero.traitIds.forEach((id) => traitMap.set(id, this.traitNameMap[id] || id));
+      });
+      this.heroClassOptions = this.sortFilterOptions(classMap);
+      this.heroTraitOptions = this.sortFilterOptions(traitMap);
+    },
+    sortFilterOptions(optionMap) {
+      return Array.from(optionMap.entries())
+        .map(([value, label]) => ({ value, label }))
+        .sort((a, b) => a.label.localeCompare(b.label, 'zh-Hans-CN'));
+    },
+    mapTraits(items) {
+      const grouped = new Map();
+      items.forEach((trait) => {
+        const key = compactText(trait.checkId, compactText(trait.id));
+        if (!key || grouped.has(key)) return;
+        grouped.set(key, {
+          id: key,
+          name: compactText(trait.name),
+          icon: firstChar(trait.name),
+          count: compactText(trait.numList, compactText(trait.values)),
+          desc: compactText(trait.prefix || trait.desc2 || trait.realDesc),
+          levels: splitLevels(trait.desc2 || trait.numList || trait.values),
+          picture: trait.picture,
+          tone: tonePalette[grouped.size % tonePalette.length],
+        });
+      });
+      return Array.from(grouped.values());
+    },
+    setEquips(items) {
+      const nextBaseItems = items
+        .filter((item) => compactText(item.synthesis1, '0') === '0' && compactText(item.synthesis2, '0') === '0')
+        .slice(0, 10)
+        .map((item, index) => ({
+          key: compactText(item.id, `base-${index}`),
+          label: firstChar(item.name),
+          name: compactText(item.name),
+          picture: item.picture,
+          bg: itemPalette[index % itemPalette.length],
+        }));
+
+      this.baseItems = nextBaseItems.length ? nextBaseItems : baseItems;
+      this.equipRecipes = this.buildRecipes(items);
+    },
+    buildRecipes(items) {
+      const recipeMap = new Map();
+      items.forEach((item, index) => {
+        const s1 = compactText(item.synthesis1);
+        const s2 = compactText(item.synthesis2);
+        if (!s1 || !s2 || s1 === '0' || s2 === '0') return;
+        recipeMap.set(`${s1}-${s2}`, { item, index });
+        recipeMap.set(`${s2}-${s1}`, { item, index });
+      });
+
+      const recipes = [];
+      this.baseItems.forEach((rowItem, rowIndex) => {
+        this.baseItems.forEach((colItem, colIndex) => {
+          const match = recipeMap.get(`${rowItem.key}-${colItem.key}`);
+          const paletteIndex = (rowIndex * 3 + colIndex * 5) % recipePalette.length;
+          recipes.push({
+            key: `${rowItem.key}-${colItem.key}`,
+            label: match ? firstChar(match.item.name) : `${rowItem.label}${colItem.label}`,
+            name: match ? compactText(match.item.name) : '',
+            picture: match?.item?.picture,
+            bg: recipePalette[paletteIndex],
+          });
+        });
+      });
+      return recipes;
+    },
+    mapRunes(items) {
+      return items.slice(0, 40).map((rune, index) => ({
+        id: rune.id,
+        name: compactText(rune.name),
+        icon: firstChar(rune.name),
+        iconUrl: rune.icon,
+        desc: compactText(rune.desc),
+        tags: [compactText(rune.level, '0')].filter(Boolean).map((level) => `Lv.${level}`),
+        tone: tonePalette[index % tonePalette.length],
+      }));
+    },
+    mapGods(items) {
+      return items.map((god, index) => ({
+        id: god.godId,
+        name: compactText(god.godName),
+        icon: firstChar(god.godName),
+        iconUrl: god.godIcon || god.tex,
+        tip: compactText(god.godTips),
+        tone: tonePalette[index % tonePalette.length],
+      }));
     },
   },
 };
@@ -392,6 +866,31 @@ export default {
   padding: 22rpx 18rpx 34rpx;
 }
 
+.state-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 360rpx;
+  margin: 28rpx 18rpx;
+  border: 1rpx solid rgba(221, 166, 100, 0.34);
+  border-radius: 18rpx;
+  color: rgba(245, 230, 203, 0.78);
+  font-size: 27rpx;
+  font-weight: 900;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.state-card.error {
+  color: #ffd0bf;
+}
+
+.retry-text {
+  margin-top: 16rpx;
+  color: #e8c896;
+  font-size: 23rpx;
+}
+
 .search-box {
   display: flex;
   align-items: center;
@@ -440,6 +939,20 @@ export default {
   background: rgba(255, 255, 255, 0.06);
 }
 
+.filter-pill.active,
+.filter-pill.selected {
+  border: 1rpx solid rgba(232, 189, 130, 0.6);
+  color: #ffe3a5;
+  background: rgba(226, 174, 105, 0.14);
+}
+
+.filter-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .filter-icon {
   margin-right: 8rpx;
   color: #c49b72;
@@ -448,6 +961,60 @@ export default {
 .chevron {
   margin-left: 8rpx;
   color: #b28a67;
+}
+
+.filter-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 16rpx;
+  padding: 16rpx;
+  border: 1rpx solid rgba(221, 166, 100, 0.28);
+  border-radius: 16rpx;
+  background: rgba(18, 9, 27, 0.45);
+}
+
+.filter-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 112rpx;
+  max-width: 220rpx;
+  height: 54rpx;
+  padding: 0 18rpx;
+  overflow: hidden;
+  border: 1rpx solid rgba(231, 191, 132, 0.18);
+  border-radius: 10rpx;
+  color: rgba(235, 214, 194, 0.74);
+  font-size: 22rpx;
+  font-weight: 900;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.filter-option text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.filter-option.active {
+  border-color: rgba(232, 189, 130, 0.72);
+  color: #fff2dc;
+  background: rgba(226, 174, 105, 0.22);
+}
+
+.hero-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16rpx;
+  color: rgba(235, 214, 194, 0.58);
+  font-size: 22rpx;
+  font-weight: 900;
+}
+
+.clear-filter {
+  color: #e8c896;
 }
 
 .guide-card {
@@ -564,6 +1131,20 @@ export default {
   margin-top: 28rpx;
 }
 
+.empty-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 180rpx;
+  margin-top: 28rpx;
+  border: 1rpx solid rgba(221, 166, 100, 0.26);
+  border-radius: 14rpx;
+  color: rgba(235, 214, 194, 0.62);
+  font-size: 25rpx;
+  font-weight: 900;
+  background: rgba(255, 255, 255, 0.045);
+}
+
 .hero-card {
   position: relative;
   height: 220rpx;
@@ -573,10 +1154,25 @@ export default {
   background: #25122e;
 }
 
+.hero-card::after {
+  position: absolute;
+  inset: 1rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.06);
+  border-radius: 12rpx;
+  content: '';
+  pointer-events: none;
+}
+
 .hero-bg,
 .hero-shade {
   position: absolute;
   inset: 0;
+}
+
+.hero-bg.remote-image {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .hero-shade {
@@ -607,6 +1203,32 @@ export default {
   background: rgba(22, 9, 28, 0.72);
 }
 
+.hero-tags {
+  position: absolute;
+  left: 62rpx;
+  right: 12rpx;
+  top: 14rpx;
+  display: flex;
+  gap: 8rpx;
+  overflow: hidden;
+}
+
+.hero-tags text {
+  max-width: 116rpx;
+  height: 38rpx;
+  padding: 0 10rpx;
+  overflow: hidden;
+  border: 1rpx solid rgba(232, 189, 130, 0.34);
+  border-radius: 10rpx;
+  color: rgba(255, 242, 220, 0.86);
+  font-size: 18rpx;
+  font-weight: 900;
+  line-height: 38rpx;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: rgba(22, 9, 28, 0.58);
+}
+
 .hero-meta {
   position: absolute;
   left: 16rpx;
@@ -626,6 +1248,224 @@ export default {
   color: rgba(239, 219, 188, 0.72);
   font-size: 22rpx;
   font-weight: 800;
+}
+
+.detail-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(9, 4, 14, 0.72);
+}
+
+.hero-detail {
+  width: 100%;
+  height: 88vh;
+  overflow: hidden;
+  border-radius: 34rpx 34rpx 0 0;
+  background:
+    radial-gradient(circle at 78% 0%, rgba(201, 151, 84, 0.18), transparent 24%),
+    linear-gradient(180deg, #1c1028 0%, #2b1434 56%, #1b0b21 100%);
+}
+
+.detail-visual {
+  position: relative;
+  height: 360rpx;
+  overflow: hidden;
+}
+
+.detail-portrait {
+  position: absolute;
+  inset: 0;
+  background-position: center 24%;
+  background-repeat: no-repeat;
+  background-size: cover;
+  transform: scale(1.04);
+}
+
+.detail-cover {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(15, 6, 21, 0.92) 0%, rgba(15, 6, 21, 0.3) 55%, rgba(15, 6, 21, 0.74) 100%),
+    linear-gradient(180deg, transparent 35%, #1c1028 100%);
+}
+
+.detail-close {
+  position: absolute;
+  right: 24rpx;
+  top: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 62rpx;
+  height: 62rpx;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: #fff2dc;
+  font-size: 42rpx;
+  line-height: 62rpx;
+  background: rgba(22, 9, 28, 0.64);
+}
+
+.detail-close::after {
+  border: 0;
+}
+
+.detail-title {
+  position: absolute;
+  left: 28rpx;
+  right: 104rpx;
+  bottom: 34rpx;
+}
+
+.detail-cost {
+  display: inline-flex;
+  align-items: center;
+  height: 42rpx;
+  padding: 0 16rpx;
+  border: 1rpx solid rgba(232, 189, 130, 0.56);
+  border-radius: 12rpx;
+  color: #f6d49a;
+  font-size: 22rpx;
+  font-weight: 900;
+  background: rgba(22, 9, 28, 0.64);
+}
+
+.detail-name {
+  display: block;
+  margin-top: 14rpx;
+  color: #fff4df;
+  font-size: 46rpx;
+  font-weight: 900;
+}
+
+.detail-sub {
+  display: block;
+  margin-top: 8rpx;
+  color: rgba(239, 219, 188, 0.72);
+  font-size: 25rpx;
+  font-weight: 800;
+}
+
+.detail-scroll {
+  height: calc(88vh - 360rpx);
+  padding: 22rpx 24rpx 44rpx;
+}
+
+.star-switch {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12rpx;
+  margin-bottom: 22rpx;
+}
+
+.star-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 62rpx;
+  border: 1rpx solid rgba(221, 166, 100, 0.26);
+  border-radius: 14rpx;
+  color: rgba(245, 230, 203, 0.72);
+  font-size: 24rpx;
+  font-weight: 900;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.star-chip.active {
+  color: #241426;
+  border-color: rgba(255, 224, 163, 0.88);
+  background: linear-gradient(135deg, #ffe0a3, #c48b43);
+  box-shadow: 0 12rpx 28rpx rgba(196, 139, 67, 0.24);
+}
+
+.detail-section {
+  margin-bottom: 22rpx;
+  padding: 22rpx;
+  border: 1rpx solid rgba(221, 166, 100, 0.26);
+  border-radius: 16rpx;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.detail-section-title {
+  display: block;
+  color: #fff0d6;
+  font-size: 28rpx;
+  font-weight: 900;
+}
+
+.detail-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 16rpx;
+}
+
+.detail-chip {
+  height: 44rpx;
+  padding: 0 16rpx;
+  border-radius: 12rpx;
+  color: #241426;
+  font-size: 22rpx;
+  font-weight: 900;
+  line-height: 44rpx;
+}
+
+.detail-chip.trait {
+  background: linear-gradient(135deg, #ffe0a3, #c48b43);
+}
+
+.detail-chip.role {
+  background: linear-gradient(135deg, #9ce6ff, #4b9bd2);
+}
+
+.detail-desc,
+.detail-value {
+  display: block;
+  margin-top: 16rpx;
+  color: rgba(245, 230, 203, 0.76);
+  font-size: 25rpx;
+  line-height: 38rpx;
+}
+
+.detail-value {
+  color: #e8c896;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12rpx;
+  margin-top: 16rpx;
+}
+
+.stat-cell {
+  min-height: 76rpx;
+  padding: 12rpx 8rpx;
+  border-radius: 12rpx;
+  text-align: center;
+  background: rgba(18, 9, 27, 0.42);
+}
+
+.stat-label,
+.stat-value {
+  display: block;
+}
+
+.stat-label {
+  color: rgba(235, 214, 194, 0.54);
+  font-size: 20rpx;
+  font-weight: 800;
+}
+
+.stat-value {
+  margin-top: 6rpx;
+  color: #fff2dc;
+  font-size: 24rpx;
+  font-weight: 900;
 }
 
 .section-head {
@@ -668,6 +1508,11 @@ export default {
   flex-shrink: 0;
   color: #1c1027;
   font-weight: 900;
+}
+
+.data-icon {
+  width: 100%;
+  height: 100%;
 }
 
 .trait-emblem {
