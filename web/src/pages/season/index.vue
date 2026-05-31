@@ -1,6 +1,6 @@
 <template>
-  <view class="season-page">
-    <view class="tab-shell">
+  <view class="season-page min-h-screen overflow-hidden text-[#f5e6cb] bg-[#21102a]">
+    <view class="tab-shell flex items-center justify-around h-[104rpx] px-[18rpx] bg-[#21102a] border-b border-[rgba(226,176,108,0.22)]">
       <view
         v-for="tab in tabs"
         :key="tab.key"
@@ -12,8 +12,8 @@
       </view>
     </view>
 
-    <scroll-view scroll-y class="content-scroll">
-      <view v-if="loading" class="state-card">
+    <scroll-view scroll-y class="content-scroll h-[calc(100vh-104rpx)] px-[28rpx] pb-[46rpx] box-border">
+      <view v-if="loading" class="state-card flex flex-col items-center justify-center min-h-[360rpx] m-[28rpx_18rpx] border border-[rgba(221,166,100,0.34)] rounded-[18rpx] text-[27rpx] font-black text-[rgba(245,230,203,0.78)] bg-[rgba(255,255,255,0.055)]">
         <text>Loading season data...</text>
       </view>
 
@@ -26,8 +26,8 @@
         <text class="retry-text">Tap to retry</text>
       </view>
 
-      <view v-else-if="activeTab === 'heroes'" class="tab-panel hero-panel">
-        <view class="search-box">
+      <view v-else-if="activeTab === 'heroes'" class="tab-panel hero-panel pt-[22rpx] pb-[34rpx]">
+        <view class="search-box flex items-center h-[82rpx] px-[24rpx] rounded-[18rpx] bg-[rgba(255,255,255,0.08)]">
           <text class="search-icon">⌕</text>
           <input
             v-model="heroKeyword"
@@ -38,7 +38,7 @@
           />
         </view>
 
-        <view class="filter-row">
+        <view class="filter-row grid grid-cols-3 gap-[14rpx] mt-[20rpx]">
           <view
             v-for="filter in heroFilters"
             :key="filter.key"
@@ -81,11 +81,11 @@
           >
         </view>
 
-        <view v-if="visibleHeroes.length" class="hero-grid">
+        <view v-if="visibleHeroes.length" class="hero-grid grid grid-cols-2 gap-[26rpx_20rpx] mt-[28rpx]">
           <view
             v-for="hero in visibleHeroes"
             :key="hero.id || hero.name"
-            class="hero-card"
+            class="hero-card relative h-[174rpx] overflow-hidden border-[4rpx] border-[rgba(127,119,143,0.9)] bg-[#25122e]"
             @tap="openHeroDetail(hero)"
           >
             <view
@@ -150,7 +150,7 @@
         </view>
       </view>
 
-      <view v-else-if="activeTab === 'items'" class="tab-panel item-panel">
+      <view v-else-if="activeTab === 'items'" class="tab-panel item-panel pt-[22rpx] pb-[34rpx]">
         <view class="section-head">
           <text class="section-title">装备资料</text>
           <text class="section-sub"
@@ -158,13 +158,13 @@
           >
         </view>
 
-        <scroll-view scroll-x class="equip-type-scroll">
-          <view class="equip-type-row">
+        <scroll-view scroll-x class="equip-type-scroll w-full mb-[18rpx] whitespace-nowrap">
+          <view class="equip-type-row flex gap-[12rpx]">
             <view
               v-for="type in equipTypeFilters"
               :key="type.value"
               :class="[
-                'equip-type-pill',
+                'equip-type-pill flex-none h-[60rpx] px-[20rpx] border border-[rgba(221,166,100,0.28)] rounded-[14rpx] text-[22rpx] font-black leading-[60rpx] text-[rgba(245,230,203,0.72)] bg-[rgba(255,255,255,0.055)]',
                 activeEquipType === type.value ? 'active' : '',
               ]"
               @tap="activeEquipType = type.value"
@@ -174,7 +174,7 @@
           </view>
         </scroll-view>
 
-        <view class="base-items">
+        <view class="base-items flex flex-wrap gap-[12rpx] mt-[18rpx]">
           <view
             v-for="item in baseItems"
             :key="item.key"
@@ -194,11 +194,11 @@
           <text>{{ visibleEquipItems.length }} / {{ equipItems.length }}</text>
         </view>
 
-        <view class="equip-list">
+        <view class="equip-list grid gap-[14rpx]">
           <view
             v-for="item in visibleEquipItems"
             :key="item.id"
-            class="equip-row-card"
+            class="equip-row-card grid grid-cols-[212rpx_minmax(0,1fr)] gap-[18rpx] min-h-[138rpx] p-[18rpx] border border-[rgba(221,166,100,0.24)] rounded-[16rpx] bg-[#432881]"
           >
             <view class="equip-formula">
               <image
@@ -246,17 +246,17 @@
         </view>
       </view>
 
-      <view v-else-if="activeTab === 'runes'" class="tab-panel rune-panel">
+      <view v-else-if="activeTab === 'runes'" class="tab-panel rune-panel pt-[22rpx] pb-[34rpx]">
         <view class="section-head">
           <text class="section-title">强化符文</text>
           <text class="section-sub">按一级、二级、三级快速筛选</text>
         </view>
-        <view class="rune-level-tabs">
+        <view class="rune-level-tabs grid grid-cols-4 gap-[12rpx] mb-[16rpx]">
           <view
             v-for="level in runeLevelFilters"
             :key="level.value"
             :class="[
-              'rune-level-tab',
+              'rune-level-tab flex items-center justify-center h-[58rpx] border border-[rgba(221,166,100,0.24)] rounded-[14rpx] text-[23rpx] font-black text-[rgba(245,230,203,0.7)] bg-[rgba(255,255,255,0.055)]',
               activeRuneLevel === level.value ? 'active' : '',
             ]"
             @tap="activeRuneLevel = level.value"
@@ -267,11 +267,11 @@
         <view class="rune-summary">
           <text>{{ visibleRunes.length }} / {{ runes.length }}</text>
         </view>
-        <view class="rune-grid">
+        <view class="rune-grid grid grid-cols-2 gap-[18rpx]">
           <view
             v-for="rune in visibleRunes"
             :key="rune.id || rune.name"
-            class="rune-card"
+            class="rune-card min-h-[246rpx] p-[22rpx] border border-[rgba(221,166,100,0.32)] rounded-[18rpx] bg-[#684bbe]"
           >
             <view :class="['rune-mark', rune.tone]">
               <image
@@ -291,14 +291,14 @@
         </view>
       </view>
 
-      <view v-else class="tab-panel god-panel">
-        <scroll-view scroll-x class="god-selector-scroll">
-          <view class="god-selector-row">
+      <view v-else class="tab-panel god-panel pt-[22rpx] pb-[34rpx]">
+        <scroll-view scroll-x class="god-selector-scroll w-full whitespace-nowrap">
+          <view class="god-selector-row flex gap-[18rpx]">
             <view
               v-for="god in godFilters"
               :key="god.value"
               :class="[
-                'god-select-card',
+                'god-select-card flex items-center gap-[16rpx] flex-none basis-[310rpx] min-h-[118rpx] p-[20rpx] border-[2rpx] border-transparent rounded-[24rpx] bg-[rgba(67,40,129,0.72)]',
                 activeGodId === god.value ? 'active' : '',
               ]"
               @tap="activeGodId = god.value"
@@ -317,7 +317,7 @@
           </view>
         </scroll-view>
 
-        <view class="god-profile-card">
+        <view class="god-profile-card relative min-h-[340rpx] mt-[26rpx] overflow-hidden rounded-[26rpx] bg-[#432881]">
           <image
             v-if="selectedGod.iconUrl"
             :src="selectedGod.iconUrl"
@@ -370,11 +370,11 @@
           >
         </view>
 
-        <view class="god-stage-list">
+        <view class="god-stage-list grid gap-[26rpx] mt-[26rpx]">
           <view
             v-for="stage in godStageGroups"
             :key="stage.stage"
-            class="god-stage-card"
+            class="god-stage-card p-[28rpx] border border-[rgba(221,166,100,0.24)] rounded-[26rpx] bg-[rgba(67,40,129,0.84)]"
           >
             <view class="god-stage-head">
               <text class="god-stage-badge">{{ stage.stage }}阶段</text>

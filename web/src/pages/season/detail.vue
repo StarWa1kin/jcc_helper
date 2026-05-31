@@ -1,17 +1,17 @@
 <template>
-  <view class="detail-page">
-    <view v-if="loading" class="state-card">Loading hero data...</view>
-    <view v-else-if="loadError" class="state-card error" @tap="loadHeroDetail">{{ loadError }}</view>
+  <view class="detail-page min-h-screen text-[#fff2dc] bg-[#12091d]">
+    <view v-if="loading" class="state-card flex items-center justify-center min-h-screen text-[28rpx] font-black text-[rgba(245,230,203,0.76)]">Loading hero data...</view>
+    <view v-else-if="loadError" class="state-card error flex items-center justify-center min-h-screen text-[28rpx] font-black text-[#ffd0bf]" @tap="loadHeroDetail">{{ loadError }}</view>
 
-    <scroll-view v-else scroll-y class="page-scroll">
-      <view class="hero-cover">
+    <scroll-view v-else scroll-y class="page-scroll h-screen">
+      <view class="hero-cover relative h-[560rpx] overflow-hidden">
         <view
           :class="['cover-art', heroArt ? 'remote-image' : heroBg]"
           :style="heroArt ? { backgroundImage: `url(${heroArt})` } : {}"
         ></view>
         <view class="cover-mask"></view>
-        <button class="back-btn" hover-class="button-hover" @tap="goBack">‹</button>
-        <view class="cover-title">
+        <button class="back-btn absolute left-[24rpx] top-[46rpx] flex items-center justify-center w-[70rpx] h-[70rpx] p-0 border-0 rounded-full text-[#fff2dc] text-[58rpx] leading-[70rpx] bg-[rgba(16,8,28,0.72)]" hover-class="button-hover" @tap="goBack">‹</button>
+        <view class="cover-title absolute left-[28rpx] right-[28rpx] bottom-[32rpx]">
           <view class="title-tags">
             <text class="cost-tag">{{ hero.cost }}费</text>
           </view>
@@ -23,9 +23,9 @@
         </view>
       </view>
 
-      <view class="content-stack">
-        <view class="detail-section skill-section">
-          <view class="section-title-row">
+      <view class="content-stack px-[24rpx] pt-[22rpx] pb-[52rpx]">
+        <view class="detail-section skill-section mb-[22rpx] p-[24rpx] overflow-hidden border border-[rgba(245,211,122,0.34)] rounded-[18rpx] bg-[rgba(19,9,31,0.66)]">
+          <view class="section-title-row flex items-center gap-[16rpx]">
             <image v-if="baseHero.raw.skillIcon" :src="baseHero.raw.skillIcon" mode="aspectFill" class="skill-icon"></image>
             <view v-else class="mini-mark">技</view>
             <view class="section-copy">
@@ -42,32 +42,32 @@
           </view>
         </view>
 
-        <view class="detail-section">
-          <view class="section-title-row">
+        <view class="detail-section mb-[22rpx] p-[24rpx] overflow-hidden border border-[rgba(221,166,100,0.24)] rounded-[18rpx] bg-[rgba(19,9,31,0.66)]">
+          <view class="section-title-row flex items-center gap-[16rpx]">
             <view class="mini-mark">属</view>
             <view class="section-copy">
               <text class="section-title">属性</text>
               <text class="section-sub">1星 / 2星 / 3星 / 4星</text>
             </view>
           </view>
-          <view class="stat-grid">
-            <view v-for="stat in starStats" :key="stat.label" class="stat-cell">
+          <view class="stat-grid grid grid-cols-2 gap-[14rpx] mt-[22rpx]">
+            <view v-for="stat in starStats" :key="stat.label" class="stat-cell min-h-[82rpx] p-[14rpx] rounded-[14rpx] bg-[rgba(255,255,255,0.055)]">
               <text class="stat-label">{{ stat.label }}</text>
               <text class="stat-value">{{ stat.value }}</text>
             </view>
           </view>
         </view>
 
-        <view class="detail-section">
-          <view class="section-title-row">
+        <view class="detail-section mb-[22rpx] p-[24rpx] overflow-hidden border border-[rgba(221,166,100,0.24)] rounded-[18rpx] bg-[rgba(19,9,31,0.66)]">
+          <view class="section-title-row flex items-center gap-[16rpx]">
             <view class="mini-mark">羁</view>
             <view class="section-copy">
               <text class="section-title">羁绊</text>
               <text class="section-sub">职业与特质效果</text>
             </view>
           </view>
-          <view class="trait-list">
-            <view v-for="trait in traitDetails" :key="trait.id" class="trait-card">
+          <view class="trait-list grid gap-[16rpx] mt-[22rpx]">
+            <view v-for="trait in traitDetails" :key="trait.id" class="trait-card p-[20rpx] border border-[rgba(221,166,100,0.18)] rounded-[16rpx] bg-[rgba(255,255,255,0.05)]">
               <view class="trait-head">
                 <image v-if="trait.picture" :src="trait.picture" mode="aspectFit" class="trait-icon"></image>
                 <view v-else :class="['trait-icon', trait.tone]">{{ trait.icon }}</view>
@@ -84,17 +84,17 @@
           </view>
         </view>
 
-        <view v-if="allies.length" class="detail-section">
-          <view class="section-title-row">
+        <view v-if="allies.length" class="detail-section mb-[22rpx] p-[24rpx] overflow-hidden border border-[rgba(221,166,100,0.24)] rounded-[18rpx] bg-[rgba(19,9,31,0.66)]">
+          <view class="section-title-row flex items-center gap-[16rpx]">
             <view class="mini-mark">协</view>
             <view class="section-copy">
               <text class="section-title">协同英雄</text>
               <text class="section-sub">共享职业或特质</text>
             </view>
           </view>
-          <scroll-view scroll-x class="ally-scroll">
-            <view class="ally-row">
-              <view v-for="ally in allies" :key="ally.id" class="ally-card">
+          <scroll-view scroll-x class="ally-scroll w-full mt-[20rpx] whitespace-nowrap">
+            <view class="ally-row flex gap-[16rpx]">
+              <view v-for="ally in allies" :key="ally.id" class="ally-card flex-none w-[112rpx] text-center">
                 <view
                   :class="['ally-avatar', ally.picture ? 'remote-image' : ally.bg]"
                   :style="ally.picture ? { backgroundImage: `url(${ally.picture})` } : {}"
@@ -289,7 +289,17 @@ export default {
     mapHeroes(items) {
       const groups = new Map();
       items
-        .filter((hero) => compactText(hero.name) && compactText(hero.showHeroTag, '1') === '1' && Number(hero.price || 0) > 0)
+        .filter((hero) => {
+          const price = Number(hero.price || 0);
+          return (
+            compactText(hero.name) &&
+            compactText(hero.showHeroTag, '1') === '1' &&
+            compactText(hero.heroType, '0') === '0' &&
+            price > 0 &&
+            price <= 5 &&
+            splitIds(hero.species).length > 0
+          );
+        })
         .forEach((hero) => {
           const cost = compactText(hero.price, '0');
           const classIds = splitIds(hero.class);
