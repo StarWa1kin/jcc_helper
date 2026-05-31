@@ -350,385 +350,385 @@ export default {
 
 <style>
 page {
-  background: #12091d;
+  @apply [background:#12091d];
 }
 
 .detail-page {
-  min-height: 100vh;
-  color: #fff2dc;
+  @apply [min-height:100vh];
+  @apply [color:#fff2dc];
   background:
     linear-gradient(180deg, rgba(57, 36, 102, 0.78), rgba(23, 12, 36, 0.96) 38%, #12091d 100%),
     repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.035) 0, rgba(255, 255, 255, 0.035) 1rpx, transparent 1rpx, transparent 6rpx);
 }
 
 .page-scroll {
-  height: 100vh;
+  @apply [height:100vh];
 }
 
 .state-card {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  color: rgba(245, 230, 203, 0.76);
-  font-size: 28rpx;
-  font-weight: 900;
+  @apply [display:flex];
+  @apply [align-items:center];
+  @apply [justify-content:center];
+  @apply [min-height:100vh];
+  @apply [color:rgba(245,_230,_203,_0.76)];
+  @apply [font-size:28rpx];
+  @apply [font-weight:900];
 }
 
 .state-card.error {
-  color: #ffd0bf;
+  @apply [color:#ffd0bf];
 }
 
 .hero-cover {
-  position: relative;
-  height: 560rpx;
-  overflow: hidden;
+  @apply [position:relative];
+  @apply [height:560rpx];
+  @apply [overflow:hidden];
 }
 
 .cover-art {
-  position: absolute;
-  inset: 0;
-  background-position: center 18%;
-  background-repeat: no-repeat;
-  background-size: cover;
-  transform: scale(1.06);
+  @apply [position:absolute];
+  @apply [inset:0];
+  @apply [background-position:center_18%];
+  @apply [background-repeat:no-repeat];
+  @apply [background-size:cover];
+  @apply [transform:scale(1.06)];
 }
 
 .cover-mask {
-  position: absolute;
-  inset: 0;
+  @apply [position:absolute];
+  @apply [inset:0];
   background:
     linear-gradient(90deg, rgba(14, 7, 24, 0.78) 0%, rgba(14, 7, 24, 0.2) 56%, rgba(14, 7, 24, 0.72) 100%),
     linear-gradient(180deg, rgba(14, 7, 24, 0.18) 0%, rgba(14, 7, 24, 0.18) 45%, #201037 100%);
 }
 
 .back-btn {
-  position: absolute;
-  left: 24rpx;
-  top: 46rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 70rpx;
-  height: 70rpx;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  color: #fff2dc;
-  font-size: 58rpx;
-  line-height: 70rpx;
-  background: rgba(16, 8, 28, 0.72);
+  @apply [position:absolute];
+  @apply [left:24rpx];
+  @apply [top:46rpx];
+  @apply [display:flex];
+  @apply [align-items:center];
+  @apply [justify-content:center];
+  @apply [width:70rpx];
+  @apply [height:70rpx];
+  @apply [padding:0];
+  @apply [border:0];
+  @apply [border-radius:50%];
+  @apply [color:#fff2dc];
+  @apply [font-size:58rpx];
+  @apply [line-height:70rpx];
+  @apply [background:rgba(16,_8,_28,_0.72)];
 }
 
 .back-btn::after {
-  border: 0;
+  @apply [border:0];
 }
 
 .cover-title {
-  position: absolute;
-  left: 28rpx;
-  right: 28rpx;
-  bottom: 32rpx;
+  @apply [position:absolute];
+  @apply [left:28rpx];
+  @apply [right:28rpx];
+  @apply [bottom:32rpx];
 }
 
 .title-tags {
-  display: flex;
-  align-items: center;
+  @apply [display:flex];
+  @apply [align-items:center];
 }
 
 .cost-tag {
-  height: 44rpx;
-  padding: 0 18rpx;
-  border: 1rpx solid rgba(232, 189, 130, 0.56);
-  border-radius: 12rpx;
-  color: #f6d49a;
-  font-size: 23rpx;
-  font-weight: 900;
-  line-height: 44rpx;
-  background: rgba(22, 9, 28, 0.64);
+  @apply [height:44rpx];
+  @apply [padding:0_18rpx];
+  @apply [border:1rpx_solid_rgba(232,_189,_130,_0.56)];
+  @apply [border-radius:12rpx];
+  @apply [color:#f6d49a];
+  @apply [font-size:23rpx];
+  @apply [font-weight:900];
+  @apply [line-height:44rpx];
+  @apply [background:rgba(22,_9,_28,_0.64)];
 }
 
 .hero-name {
-  display: block;
-  margin-top: 16rpx;
-  color: #fff4df;
-  font-size: 54rpx;
-  font-weight: 900;
+  @apply [display:block];
+  @apply [margin-top:16rpx];
+  @apply [color:#fff4df];
+  @apply [font-size:54rpx];
+  @apply [font-weight:900];
 }
 
 .chip-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12rpx;
-  margin-top: 18rpx;
+  @apply [display:flex];
+  @apply [flex-wrap:wrap];
+  @apply [gap:12rpx];
+  @apply [margin-top:18rpx];
 }
 
 .detail-chip {
-  height: 44rpx;
-  padding: 0 16rpx;
-  border-radius: 12rpx;
-  color: #241426;
-  font-size: 22rpx;
-  font-weight: 900;
-  line-height: 44rpx;
+  @apply [height:44rpx];
+  @apply [padding:0_16rpx];
+  @apply [border-radius:12rpx];
+  @apply [color:#241426];
+  @apply [font-size:22rpx];
+  @apply [font-weight:900];
+  @apply [line-height:44rpx];
 }
 
 .detail-chip.trait,
 .trait-levels text {
-  background: linear-gradient(135deg, #ffe0a3, #c48b43);
+  @apply [background:linear-gradient(135deg,_#ffe0a3,_#c48b43)];
 }
 
 .detail-chip.role {
-  background: linear-gradient(135deg, #9ce6ff, #4b9bd2);
+  @apply [background:linear-gradient(135deg,_#9ce6ff,_#4b9bd2)];
 }
 
 .content-stack {
-  padding: 22rpx 24rpx 52rpx;
+  @apply [padding:22rpx_24rpx_52rpx];
 }
 
 .detail-section {
-  margin-bottom: 22rpx;
-  padding: 24rpx;
-  overflow: hidden;
-  border: 1rpx solid rgba(221, 166, 100, 0.24);
-  border-radius: 18rpx;
+  @apply [margin-bottom:22rpx];
+  @apply [padding:24rpx];
+  @apply [overflow:hidden];
+  @apply [border:1rpx_solid_rgba(221,_166,_100,_0.24)];
+  @apply [border-radius:18rpx];
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.035)),
     rgba(19, 9, 31, 0.66);
 }
 
 .skill-section {
-  border-color: rgba(245, 211, 122, 0.34);
+  @apply [border-color:rgba(245,_211,_122,_0.34)];
 }
 
 .section-title-row {
-  display: flex;
-  align-items: center;
-  gap: 16rpx;
+  @apply [display:flex];
+  @apply [align-items:center];
+  @apply [gap:16rpx];
 }
 
 .section-copy {
-  min-width: 0;
+  @apply [min-width:0];
 }
 
 .section-title {
-  display: block;
-  color: #fff0d6;
-  font-size: 28rpx;
-  font-weight: 900;
+  @apply [display:block];
+  @apply [color:#fff0d6];
+  @apply [font-size:28rpx];
+  @apply [font-weight:900];
 }
 
 .section-sub {
-  display: block;
-  margin-top: 4rpx;
-  overflow: hidden;
-  color: rgba(239, 219, 188, 0.58);
-  font-size: 21rpx;
-  font-weight: 800;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  @apply [display:block];
+  @apply [margin-top:4rpx];
+  @apply [overflow:hidden];
+  @apply [color:rgba(239,_219,_188,_0.58)];
+  @apply [font-size:21rpx];
+  @apply [font-weight:800];
+  @apply [text-overflow:ellipsis];
+  @apply [white-space:nowrap];
 }
 
 .skill-icon,
 .mini-mark {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-  width: 70rpx;
-  height: 70rpx;
-  overflow: hidden;
-  border: 1rpx solid rgba(255, 224, 163, 0.5);
-  border-radius: 14rpx;
-  color: #ffe0a3;
-  font-size: 24rpx;
-  font-weight: 900;
-  background: rgba(255, 224, 163, 0.12);
+  @apply [display:flex];
+  @apply [align-items:center];
+  @apply [justify-content:center];
+  @apply [flex:0_0_auto];
+  @apply [width:70rpx];
+  @apply [height:70rpx];
+  @apply [overflow:hidden];
+  @apply [border:1rpx_solid_rgba(255,_224,_163,_0.5)];
+  @apply [border-radius:14rpx];
+  @apply [color:#ffe0a3];
+  @apply [font-size:24rpx];
+  @apply [font-weight:900];
+  @apply [background:rgba(255,_224,_163,_0.12)];
 }
 
 .desc-text {
-  display: block;
-  margin-top: 16rpx;
-  color: rgba(245, 230, 203, 0.76);
-  font-size: 24rpx;
-  line-height: 39rpx;
+  @apply [display:block];
+  @apply [margin-top:16rpx];
+  @apply [color:rgba(245,_230,_203,_0.76)];
+  @apply [font-size:24rpx];
+  @apply [line-height:39rpx];
 }
 
 .skill-value-list {
-  margin-top: 18rpx;
-  border-top: 1rpx solid rgba(255, 224, 163, 0.16);
+  @apply [margin-top:18rpx];
+  @apply [border-top:1rpx_solid_rgba(255,_224,_163,_0.16)];
 }
 
 .skill-value-row {
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr);
-  gap: 16rpx;
-  padding: 14rpx 0;
-  border-bottom: 1rpx solid rgba(255, 224, 163, 0.12);
-  color: rgba(245, 230, 203, 0.74);
-  font-size: 23rpx;
-  font-weight: 800;
-  line-height: 34rpx;
+  @apply [display:grid];
+  @apply [grid-template-columns:minmax(0,_0.9fr)_minmax(0,_1.4fr)];
+  @apply [gap:16rpx];
+  @apply [padding:14rpx_0];
+  @apply [border-bottom:1rpx_solid_rgba(255,_224,_163,_0.12)];
+  @apply [color:rgba(245,_230,_203,_0.74)];
+  @apply [font-size:23rpx];
+  @apply [font-weight:800];
+  @apply [line-height:34rpx];
 }
 
 .skill-value-row text:last-child {
-  color: #f6d49a;
+  @apply [color:#f6d49a];
 }
 
 .stat-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12rpx;
-  margin-top: 20rpx;
+  @apply [display:grid];
+  @apply [grid-template-columns:repeat(2,_minmax(0,_1fr))];
+  @apply [gap:12rpx];
+  @apply [margin-top:20rpx];
 }
 
 .stat-cell {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12rpx;
-  min-height: 82rpx;
-  padding: 14rpx 16rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.06);
-  border-radius: 14rpx;
-  background: rgba(18, 9, 27, 0.42);
+  @apply [display:flex];
+  @apply [align-items:flex-start];
+  @apply [justify-content:space-between];
+  @apply [gap:12rpx];
+  @apply [min-height:82rpx];
+  @apply [padding:14rpx_16rpx];
+  @apply [border:1rpx_solid_rgba(255,_255,_255,_0.06)];
+  @apply [border-radius:14rpx];
+  @apply [background:rgba(18,_9,_27,_0.42)];
 }
 
 .stat-label,
 .stat-value {
-  display: block;
+  @apply [display:block];
 }
 
 .stat-label {
-  flex: 0 0 auto;
-  color: rgba(235, 214, 194, 0.54);
-  font-size: 22rpx;
-  font-weight: 800;
+  @apply [flex:0_0_auto];
+  @apply [color:rgba(235,_214,_194,_0.54)];
+  @apply [font-size:22rpx];
+  @apply [font-weight:800];
 }
 
 .stat-value {
-  min-width: 0;
-  color: #fff2dc;
-  font-size: 22rpx;
-  font-weight: 900;
-  line-height: 32rpx;
-  text-align: right;
-  word-break: break-all;
+  @apply [min-width:0];
+  @apply [color:#fff2dc];
+  @apply [font-size:22rpx];
+  @apply [font-weight:900];
+  @apply [line-height:32rpx];
+  @apply [text-align:right];
+  @apply [word-break:break-all];
 }
 
 .trait-list {
-  display: grid;
-  gap: 16rpx;
-  margin-top: 20rpx;
+  @apply [display:grid];
+  @apply [gap:16rpx];
+  @apply [margin-top:20rpx];
 }
 
 .trait-card {
-  padding: 18rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.07);
-  border-radius: 16rpx;
-  background: rgba(18, 9, 27, 0.42);
+  @apply [padding:18rpx];
+  @apply [border:1rpx_solid_rgba(255,_255,_255,_0.07)];
+  @apply [border-radius:16rpx];
+  @apply [background:rgba(18,_9,_27,_0.42)];
 }
 
 .trait-head {
-  display: flex;
-  align-items: center;
-  gap: 14rpx;
+  @apply [display:flex];
+  @apply [align-items:center];
+  @apply [gap:14rpx];
 }
 
 .trait-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-  width: 62rpx;
-  height: 62rpx;
-  overflow: hidden;
-  border-radius: 50%;
-  color: #fff2dc;
-  font-size: 22rpx;
-  font-weight: 900;
+  @apply [display:flex];
+  @apply [align-items:center];
+  @apply [justify-content:center];
+  @apply [flex:0_0_auto];
+  @apply [width:62rpx];
+  @apply [height:62rpx];
+  @apply [overflow:hidden];
+  @apply [border-radius:50%];
+  @apply [color:#fff2dc];
+  @apply [font-size:22rpx];
+  @apply [font-weight:900];
 }
 
 .trait-copy {
-  min-width: 0;
+  @apply [min-width:0];
 }
 
 .trait-name {
-  display: block;
-  color: #fff0d6;
-  font-size: 25rpx;
-  font-weight: 900;
+  @apply [display:block];
+  @apply [color:#fff0d6];
+  @apply [font-size:25rpx];
+  @apply [font-weight:900];
 }
 
 .trait-count {
-  display: block;
-  margin-top: 4rpx;
-  color: #e8c896;
-  font-size: 21rpx;
-  font-weight: 800;
+  @apply [display:block];
+  @apply [margin-top:4rpx];
+  @apply [color:#e8c896];
+  @apply [font-size:21rpx];
+  @apply [font-weight:800];
 }
 
 .trait-desc {
-  display: block;
-  margin-top: 14rpx;
-  color: rgba(245, 230, 203, 0.7);
-  font-size: 23rpx;
-  line-height: 36rpx;
+  @apply [display:block];
+  @apply [margin-top:14rpx];
+  @apply [color:rgba(245,_230,_203,_0.7)];
+  @apply [font-size:23rpx];
+  @apply [line-height:36rpx];
 }
 
 .trait-levels {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10rpx;
-  margin-top: 14rpx;
+  @apply [display:flex];
+  @apply [flex-wrap:wrap];
+  @apply [gap:10rpx];
+  @apply [margin-top:14rpx];
 }
 
 .trait-levels text {
-  max-width: 100%;
-  padding: 8rpx 12rpx;
-  border-radius: 10rpx;
-  color: #241426;
-  font-size: 20rpx;
-  font-weight: 900;
+  @apply [max-width:100%];
+  @apply [padding:8rpx_12rpx];
+  @apply [border-radius:10rpx];
+  @apply [color:#241426];
+  @apply [font-size:20rpx];
+  @apply [font-weight:900];
 }
 
 .ally-scroll {
-  width: 100%;
-  margin-top: 20rpx;
-  white-space: nowrap;
+  @apply [width:100%];
+  @apply [margin-top:20rpx];
+  @apply [white-space:nowrap];
 }
 
 .ally-row {
-  display: flex;
-  gap: 16rpx;
+  @apply [display:flex];
+  @apply [gap:16rpx];
 }
 
 .ally-card {
-  flex: 0 0 102rpx;
-  width: 102rpx;
+  @apply [flex:0_0_102rpx];
+  @apply [width:102rpx];
 }
 
 .ally-avatar {
-  width: 96rpx;
-  height: 96rpx;
-  overflow: hidden;
-  border: 2rpx solid rgba(255, 224, 163, 0.34);
-  border-radius: 50%;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
+  @apply [width:96rpx];
+  @apply [height:96rpx];
+  @apply [overflow:hidden];
+  @apply [border:2rpx_solid_rgba(255,_224,_163,_0.34)];
+  @apply [border-radius:50%];
+  @apply [background-position:center];
+  @apply [background-repeat:no-repeat];
+  @apply [background-size:cover];
 }
 
 .ally-card text {
-  display: block;
-  margin-top: 10rpx;
-  overflow: hidden;
-  color: rgba(245, 230, 203, 0.76);
-  font-size: 20rpx;
-  font-weight: 900;
-  text-align: center;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  @apply [display:block];
+  @apply [margin-top:10rpx];
+  @apply [overflow:hidden];
+  @apply [color:rgba(245,_230,_203,_0.76)];
+  @apply [font-size:20rpx];
+  @apply [font-weight:900];
+  @apply [text-align:center];
+  @apply [text-overflow:ellipsis];
+  @apply [white-space:nowrap];
 }
 
 .hero-one { background: radial-gradient(circle at 66% 28%, #dcc067, transparent 20%), linear-gradient(135deg, #33205f, #7548ec 48%, #16091f); }
@@ -742,8 +742,8 @@ page {
 .tone-violet { background: linear-gradient(135deg, #d7a4ff, #7f54e8); }
 .tone-rose { background: linear-gradient(135deg, #ffb1b1, #d84e6a); }
 .remote-image {
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
+  @apply [background-position:center];
+  @apply [background-repeat:no-repeat];
+  @apply [background-size:cover];
 }
 </style>
