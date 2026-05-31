@@ -31,7 +31,11 @@
         <text>Loading season data...</text>
       </view>
 
-      <view v-else-if="loadError" class="state-card error" @tap="loadSeasonData">
+      <view
+        v-else-if="loadError"
+        class="state-card error"
+        @tap="loadSeasonData"
+      >
         <text>{{ loadError }}</text>
         <text class="retry-text">Tap to retry</text>
       </view>
@@ -52,7 +56,11 @@
           <view
             v-for="filter in heroFilters"
             :key="filter.key"
-            :class="['filter-pill', activeHeroFilter === filter.key ? 'active' : '', heroFilterValue(filter.key) ? 'selected' : '']"
+            :class="[
+              'filter-pill',
+              activeHeroFilter === filter.key ? 'active' : '',
+              heroFilterValue(filter.key) ? 'selected' : '',
+            ]"
             @tap="toggleHeroFilter(filter.key)"
           >
             <text class="filter-icon">{{ filter.icon }}</text>
@@ -65,7 +73,12 @@
           <view
             v-for="option in activeHeroFilterOptions"
             :key="option.value"
-            :class="['filter-option', heroFilterValue(activeHeroFilter) === option.value ? 'active' : '']"
+            :class="[
+              'filter-option',
+              heroFilterValue(activeHeroFilter) === option.value
+                ? 'active'
+                : '',
+            ]"
             @tap="selectHeroFilter(activeHeroFilter, option.value)"
           >
             <text>{{ option.label }}</text>
@@ -74,32 +87,26 @@
 
         <view class="hero-summary">
           <text>{{ visibleHeroes.length }} / {{ heroes.length }}</text>
-          <text v-if="hasHeroFilter" class="clear-filter" @tap="resetHeroFilters">重置筛选</text>
-        </view>
-
-        <view class="guide-card">
-          <view class="guide-bg">
-            <text class="guide-badge">推荐攻略</text>
-            <view class="mini-items">
-              <view v-for="index in 8" :key="index" :class="['mini-item', `mini-${index}`]"></view>
-            </view>
-          </view>
-          <view class="guide-copy">
-            <text class="guide-title">跟着弈老师打宝不迷路，传奇小怪狂掉神装攻略</text>
-            <text class="guide-desc">新版打宝思路详解，阵容搭配与装备优先级全解析。</text>
-            <view class="review-row">
-              <view class="avatar"></view>
-              <text>玩心手游测评</text>
-              <text class="review-arrow">›</text>
-            </view>
-          </view>
+          <text
+            v-if="hasHeroFilter"
+            class="clear-filter"
+            @tap="resetHeroFilters"
+            >重置筛选</text
+          >
         </view>
 
         <view v-if="visibleHeroes.length" class="hero-grid">
-          <view v-for="hero in visibleHeroes" :key="hero.id || hero.name" class="hero-card" @tap="openHeroDetail(hero)">
+          <view
+            v-for="hero in visibleHeroes"
+            :key="hero.id || hero.name"
+            class="hero-card"
+            @tap="openHeroDetail(hero)"
+          >
             <view
               :class="['hero-bg', hero.bg, hero.picture ? 'remote-image' : '']"
-              :style="hero.picture ? { backgroundImage: `url(${hero.picture})` } : {}"
+              :style="
+                hero.picture ? { backgroundImage: `url(${hero.picture})` } : {}
+              "
             ></view>
             <view class="hero-shade"></view>
             <view class="cost-badge">{{ hero.cost }}</view>
@@ -127,9 +134,18 @@
           <text class="section-sub">按职业与特质快速查看等级收益</text>
         </view>
         <view class="trait-list">
-          <view v-for="trait in traits" :key="trait.id || trait.name" class="trait-card">
+          <view
+            v-for="trait in traits"
+            :key="trait.id || trait.name"
+            class="trait-card"
+          >
             <view :class="['trait-emblem', trait.tone]">
-              <image v-if="trait.picture" :src="trait.picture" mode="aspectFit" class="data-icon"></image>
+              <image
+                v-if="trait.picture"
+                :src="trait.picture"
+                mode="aspectFit"
+                class="data-icon"
+              ></image>
               <text v-else>{{ trait.icon }}</text>
             </view>
             <view class="trait-main">
@@ -139,7 +155,9 @@
               </view>
               <text class="trait-desc">{{ trait.desc }}</text>
               <view class="trait-levels">
-                <text v-for="level in trait.levels" :key="level">{{ level }}</text>
+                <text v-for="level in trait.levels" :key="level">{{
+                  level
+                }}</text>
               </view>
             </view>
           </view>
@@ -151,8 +169,17 @@
           <text class="section-title">基础装备</text>
         </view>
         <view class="base-items">
-          <view v-for="item in baseItems" :key="item.key" :class="['equip-icon', item.bg]">
-            <image v-if="item.picture" :src="item.picture" mode="aspectFit" class="data-icon"></image>
+          <view
+            v-for="item in baseItems"
+            :key="item.key"
+            :class="['equip-icon', item.bg]"
+          >
+            <image
+              v-if="item.picture"
+              :src="item.picture"
+              mode="aspectFit"
+              class="data-icon"
+            ></image>
             <text v-else>{{ item.label }}</text>
           </view>
         </view>
@@ -163,20 +190,47 @@
         <view class="craft-board">
           <view class="corner">↘</view>
           <view class="top-axis">
-            <view v-for="item in baseItems" :key="`top-${item.key}`" :class="['axis-icon', item.bg]">
-              <image v-if="item.picture" :src="item.picture" mode="aspectFit" class="data-icon"></image>
+            <view
+              v-for="item in baseItems"
+              :key="`top-${item.key}`"
+              :class="['axis-icon', item.bg]"
+            >
+              <image
+                v-if="item.picture"
+                :src="item.picture"
+                mode="aspectFit"
+                class="data-icon"
+              ></image>
               <text v-else>{{ item.label }}</text>
             </view>
           </view>
           <view class="left-axis">
-            <view v-for="item in baseItems" :key="`left-${item.key}`" :class="['axis-icon', item.bg]">
-              <image v-if="item.picture" :src="item.picture" mode="aspectFit" class="data-icon"></image>
+            <view
+              v-for="item in baseItems"
+              :key="`left-${item.key}`"
+              :class="['axis-icon', item.bg]"
+            >
+              <image
+                v-if="item.picture"
+                :src="item.picture"
+                mode="aspectFit"
+                class="data-icon"
+              ></image>
               <text v-else>{{ item.label }}</text>
             </view>
           </view>
           <view class="recipe-grid">
-            <view v-for="recipe in recipes" :key="recipe.key" :class="['recipe-icon', recipe.bg]">
-              <image v-if="recipe.picture" :src="recipe.picture" mode="aspectFit" class="data-icon"></image>
+            <view
+              v-for="recipe in recipes"
+              :key="recipe.key"
+              :class="['recipe-icon', recipe.bg]"
+            >
+              <image
+                v-if="recipe.picture"
+                :src="recipe.picture"
+                mode="aspectFit"
+                class="data-icon"
+              ></image>
               <text v-else>{{ recipe.label }}</text>
             </view>
           </view>
@@ -186,12 +240,34 @@
       <view v-else-if="activeTab === 'runes'" class="tab-panel rune-panel">
         <view class="section-head">
           <text class="section-title">强化符文</text>
-          <text class="section-sub">按经济、战力、转职和专属分类</text>
+          <text class="section-sub">按一级、二级、三级快速筛选</text>
+        </view>
+        <view class="rune-level-tabs">
+          <view
+            v-for="level in runeLevelFilters"
+            :key="level.value"
+            :class="['rune-level-tab', activeRuneLevel === level.value ? 'active' : '']"
+            @tap="activeRuneLevel = level.value"
+          >
+            <text>{{ level.label }}</text>
+          </view>
+        </view>
+        <view class="rune-summary">
+          <text>{{ visibleRunes.length }} / {{ runes.length }}</text>
         </view>
         <view class="rune-grid">
-          <view v-for="rune in runes" :key="rune.id || rune.name" class="rune-card">
+          <view
+            v-for="rune in visibleRunes"
+            :key="rune.id || rune.name"
+            class="rune-card"
+          >
             <view :class="['rune-mark', rune.tone]">
-              <image v-if="rune.iconUrl" :src="rune.iconUrl" mode="aspectFit" class="data-icon"></image>
+              <image
+                v-if="rune.iconUrl"
+                :src="rune.iconUrl"
+                mode="aspectFit"
+                class="data-icon"
+              ></image>
               <text v-else>{{ rune.icon }}</text>
             </view>
             <text class="rune-name">{{ rune.name }}</text>
@@ -212,7 +288,12 @@
         <view class="god-list">
           <view v-for="god in gods" :key="god.id || god.name" class="god-card">
             <view :class="['god-icon', god.tone]">
-              <image v-if="god.iconUrl" :src="god.iconUrl" mode="aspectFit" class="data-icon"></image>
+              <image
+                v-if="god.iconUrl"
+                :src="god.iconUrl"
+                mode="aspectFit"
+                class="data-icon"
+              ></image>
               <text v-else>{{ god.icon }}</text>
             </view>
             <view>
@@ -224,21 +305,40 @@
         </view>
       </view>
     </scroll-view>
-
   </view>
 </template>
 
 <script>
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000').replace(/\/$/, '');
-const tonePalette = ['tone-gold', 'tone-blue', 'tone-violet', 'tone-rose'];
-const heroPalette = ['hero-one', 'hero-two', 'hero-three', 'hero-four', 'hero-five', 'hero-six'];
-const itemPalette = ['bg-sword', 'bg-bow', 'bg-rod', 'bg-tear', 'bg-vest', 'bg-cloak', 'bg-belt', 'bg-glove', 'bg-pan', 'bg-spatula'];
+const API_BASE_URL = (
+  import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"
+).replace(/\/$/, "");
+const tonePalette = ["tone-gold", "tone-blue", "tone-violet", "tone-rose"];
+const heroPalette = [
+  "hero-one",
+  "hero-two",
+  "hero-three",
+  "hero-four",
+  "hero-five",
+  "hero-six",
+];
+const itemPalette = [
+  "bg-sword",
+  "bg-bow",
+  "bg-rod",
+  "bg-tear",
+  "bg-vest",
+  "bg-cloak",
+  "bg-belt",
+  "bg-glove",
+  "bg-pan",
+  "bg-spatula",
+];
 
 function requestApi(path, params = {}) {
   return new Promise((resolve, reject) => {
     uni.request({
       url: `${API_BASE_URL}${path}`,
-      method: 'GET',
+      method: "GET",
       data: params,
       success: (res) => {
         if (res.statusCode >= 200 && res.statusCode < 300) {
@@ -252,12 +352,12 @@ function requestApi(path, params = {}) {
   });
 }
 
-function compactText(value, fallback = '') {
+function compactText(value, fallback = "") {
   if (value === undefined || value === null) return fallback;
-  return String(value).replace(/\s+/g, ' ').trim() || fallback;
+  return String(value).replace(/\s+/g, " ").trim() || fallback;
 }
 
-function firstChar(value, fallback = '?') {
+function firstChar(value, fallback = "?") {
   return compactText(value, fallback).slice(0, 1) || fallback;
 }
 
@@ -271,129 +371,210 @@ function splitLevels(value) {
 
 function splitIds(value) {
   return compactText(value)
-    .split('|')
+    .split("|")
     .map((item) => compactText(item))
-    .filter((item) => item && item !== '-1' && item !== '0');
+    .filter((item) => item && item !== "-1" && item !== "0");
 }
 
 const baseItems = [
-  { key: 'sword', label: '剑', bg: 'bg-sword' },
-  { key: 'bow', label: '弓', bg: 'bg-bow' },
-  { key: 'rod', label: '棒', bg: 'bg-rod' },
-  { key: 'tear', label: '泪', bg: 'bg-tear' },
-  { key: 'vest', label: '甲', bg: 'bg-vest' },
-  { key: 'cloak', label: '斗', bg: 'bg-cloak' },
-  { key: 'belt', label: '带', bg: 'bg-belt' },
-  { key: 'glove', label: '套', bg: 'bg-glove' },
-  { key: 'pan', label: '锅', bg: 'bg-pan' },
-  { key: 'spatula', label: '铲', bg: 'bg-spatula' },
+  { key: "sword", label: "剑", bg: "bg-sword" },
+  { key: "bow", label: "弓", bg: "bg-bow" },
+  { key: "rod", label: "棒", bg: "bg-rod" },
+  { key: "tear", label: "泪", bg: "bg-tear" },
+  { key: "vest", label: "甲", bg: "bg-vest" },
+  { key: "cloak", label: "斗", bg: "bg-cloak" },
+  { key: "belt", label: "带", bg: "bg-belt" },
+  { key: "glove", label: "套", bg: "bg-glove" },
+  { key: "pan", label: "锅", bg: "bg-pan" },
+  { key: "spatula", label: "铲", bg: "bg-spatula" },
 ];
 
 const recipePalette = [
-  'recipe-flame',
-  'recipe-tide',
-  'recipe-venom',
-  'recipe-storm',
-  'recipe-void',
-  'recipe-gold',
-  'recipe-iron',
-  'recipe-star',
-  'recipe-sigil',
-  'recipe-spirit',
+  "recipe-flame",
+  "recipe-tide",
+  "recipe-venom",
+  "recipe-storm",
+  "recipe-void",
+  "recipe-gold",
+  "recipe-iron",
+  "recipe-star",
+  "recipe-sigil",
+  "recipe-spirit",
 ];
 
 export default {
   data() {
     return {
-      activeTab: 'heroes',
-      heroKeyword: '',
-      activeHeroFilter: '',
+      activeTab: "heroes",
+      heroKeyword: "",
+      activeHeroFilter: "",
+      activeRuneLevel: "",
       loading: false,
-      loadError: '',
+      loadError: "",
       seasonMeta: null,
       heroFiltersValue: {
-        cost: '',
-        class: '',
-        trait: '',
+        cost: "",
+        class: "",
+        trait: "",
       },
       heroClassOptions: [],
       heroTraitOptions: [],
       traitNameMap: {},
       tabs: [
-        { key: 'heroes', label: '英雄', icon: '♜' },
-        { key: 'traits', label: '羁绊', icon: '❖' },
-        { key: 'items', label: '装备', icon: '♛' },
-        { key: 'runes', label: '强化符文', icon: '✧' },
-        { key: 'gods', label: '神明', icon: '✬' },
+        { key: "heroes", label: "英雄", icon: "♜" },
+        { key: "traits", label: "羁绊", icon: "❖" },
+        { key: "items", label: "装备", icon: "♛" },
+        { key: "runes", label: "强化符文", icon: "✧" },
+        { key: "gods", label: "神明", icon: "✬" },
       ],
       heroFilters: [
-        { key: 'cost', icon: '◉', label: '全部费用' },
-        { key: 'class', icon: '⬟', label: '全部职业' },
-        { key: 'trait', icon: '⬡', label: '全部特质' },
+        { key: "cost", icon: "◉", label: "全部费用" },
+        { key: "class", icon: "⬟", label: "全部职业" },
+        { key: "trait", icon: "⬡", label: "全部特质" },
+      ],
+      runeLevelFilters: [
+        { value: "", label: "全部" },
+        { value: "1", label: "一级" },
+        { value: "2", label: "二级" },
+        { value: "3", label: "三级" },
       ],
       heroes: [
-        { name: '崔斯特', views: '12.3万', cost: '1', bg: 'hero-one' },
-        { name: '伊泽瑞尔', views: '8.7万', cost: '1', bg: 'hero-two' },
-        { name: '泰隆', views: '10.6万', cost: '1', bg: 'hero-three' },
-        { name: '内瑟斯', views: '9.1万', cost: '1', bg: 'hero-four' },
-        { name: '暮光吸', views: '7.6万', cost: '2', bg: 'hero-five' },
-        { name: '吉克蓝', views: '6.2万', cost: '2', bg: 'hero-six' },
+        { name: "崔斯特", views: "12.3万", cost: "1", bg: "hero-one" },
+        { name: "伊泽瑞尔", views: "8.7万", cost: "1", bg: "hero-two" },
+        { name: "泰隆", views: "10.6万", cost: "1", bg: "hero-three" },
+        { name: "内瑟斯", views: "9.1万", cost: "1", bg: "hero-four" },
+        { name: "暮光吸", views: "7.6万", cost: "2", bg: "hero-five" },
+        { name: "吉克蓝", views: "6.2万", cost: "2", bg: "hero-six" },
       ],
       traits: [
-        { name: '星神', icon: '星', count: '2/4/6', desc: '友军造成伤害时获得治疗，后期容错更高。', levels: ['2: 12%', '4: 25%', '6: 45%'], tone: 'tone-gold' },
-        { name: '圣盾使', icon: '盾', count: '2/4/6', desc: '释放技能后获得护盾，适合前排持续作战。', levels: ['2: 20%', '4: 35%', '6: 50%'], tone: 'tone-blue' },
-        { name: '狙神', icon: '狙', count: '2/4', desc: '距离越远伤害越高，适合后排主 C。', levels: ['2: +8%', '4: +18%'], tone: 'tone-violet' },
+        {
+          name: "星神",
+          icon: "星",
+          count: "2/4/6",
+          desc: "友军造成伤害时获得治疗，后期容错更高。",
+          levels: ["2: 12%", "4: 25%", "6: 45%"],
+          tone: "tone-gold",
+        },
+        {
+          name: "圣盾使",
+          icon: "盾",
+          count: "2/4/6",
+          desc: "释放技能后获得护盾，适合前排持续作战。",
+          levels: ["2: 20%", "4: 35%", "6: 50%"],
+          tone: "tone-blue",
+        },
+        {
+          name: "狙神",
+          icon: "狙",
+          count: "2/4",
+          desc: "距离越远伤害越高，适合后排主 C。",
+          levels: ["2: +8%", "4: +18%"],
+          tone: "tone-violet",
+        },
       ],
       baseItems,
       equipRecipes: [],
       runes: [
-        { name: '经济扩张', icon: '金', desc: '更快成型，适合连胜或高费运营。', tags: ['经济', '运营'], tone: 'tone-gold' },
-        { name: '前排壁垒', icon: '盾', desc: '补足坦度，提升阵容启动时间。', tags: ['防御', '前排'], tone: 'tone-blue' },
-        { name: '火力倾泻', icon: '攻', desc: '提升主 C 输出峰值，适合爆发阵容。', tags: ['输出', '主C'], tone: 'tone-rose' },
-        { name: '职业之心', icon: '转', desc: '提前开启关键羁绊节点。', tags: ['转职', '羁绊'], tone: 'tone-violet' },
+        {
+          name: "经济扩张",
+          icon: "金",
+          desc: "更快成型，适合连胜或高费运营。",
+          tags: ["经济", "运营"],
+          tone: "tone-gold",
+        },
+        {
+          name: "前排壁垒",
+          icon: "盾",
+          desc: "补足坦度，提升阵容启动时间。",
+          tags: ["防御", "前排"],
+          tone: "tone-blue",
+        },
+        {
+          name: "火力倾泻",
+          icon: "攻",
+          desc: "提升主 C 输出峰值，适合爆发阵容。",
+          tags: ["输出", "主C"],
+          tone: "tone-rose",
+        },
+        {
+          name: "职业之心",
+          icon: "转",
+          desc: "提前开启关键羁绊节点。",
+          tags: ["转职", "羁绊"],
+          tone: "tone-violet",
+        },
       ],
       gods: [
-        { name: '裁决之神', icon: '裁', tip: '适合斩杀与爆发阵容', tone: 'tone-gold' },
-        { name: '守护之神', icon: '守', tip: '适合前排厚度不足时选择', tone: 'tone-blue' },
-        { name: '秘术之神', icon: '秘', tip: '适合法系和控制链阵容', tone: 'tone-violet' },
+        {
+          name: "裁决之神",
+          icon: "裁",
+          tip: "适合斩杀与爆发阵容",
+          tone: "tone-gold",
+        },
+        {
+          name: "守护之神",
+          icon: "守",
+          tip: "适合前排厚度不足时选择",
+          tone: "tone-blue",
+        },
+        {
+          name: "秘术之神",
+          icon: "秘",
+          tip: "适合法系和控制链阵容",
+          tone: "tone-violet",
+        },
       ],
     };
   },
   computed: {
     hasHeroFilter() {
       return Boolean(
-        this.heroKeyword.trim()
-          || this.heroFiltersValue.cost
-          || this.heroFiltersValue.class
-          || this.heroFiltersValue.trait,
+        this.heroKeyword.trim() ||
+        this.heroFiltersValue.cost ||
+        this.heroFiltersValue.class ||
+        this.heroFiltersValue.trait,
       );
     },
     activeHeroFilterOptions() {
-      if (this.activeHeroFilter === 'cost') {
+      if (this.activeHeroFilter === "cost") {
         return [
-          { value: '', label: '全部费用' },
-          ...[1, 2, 3, 4, 5].map((cost) => ({ value: String(cost), label: `${cost}费` })),
+          { value: "", label: "全部费用" },
+          ...[1, 2, 3, 4, 5].map((cost) => ({
+            value: String(cost),
+            label: `${cost}费`,
+          })),
         ];
       }
-      if (this.activeHeroFilter === 'class') {
-        return [{ value: '', label: '全部职业' }, ...this.heroClassOptions];
+      if (this.activeHeroFilter === "class") {
+        return [{ value: "", label: "全部职业" }, ...this.heroClassOptions];
       }
-      if (this.activeHeroFilter === 'trait') {
-        return [{ value: '', label: '全部特质' }, ...this.heroTraitOptions];
+      if (this.activeHeroFilter === "trait") {
+        return [{ value: "", label: "全部特质" }, ...this.heroTraitOptions];
       }
       return [];
+    },
+    visibleRunes() {
+      if (!this.activeRuneLevel) return this.runes;
+      return this.runes.filter((rune) => rune.level === this.activeRuneLevel);
     },
     visibleHeroes() {
       const keyword = this.heroKeyword.trim();
       return this.heroes.filter((hero) => {
-        const matchesKeyword = !keyword
-          || hero.name.includes(keyword)
-          || hero.skillName.includes(keyword)
-          || hero.classNames.some((name) => name.includes(keyword))
-          || hero.traitNames.some((name) => name.includes(keyword));
-        const matchesCost = !this.heroFiltersValue.cost || hero.cost === this.heroFiltersValue.cost;
-        const matchesClass = !this.heroFiltersValue.class || hero.classIds.includes(this.heroFiltersValue.class);
-        const matchesTrait = !this.heroFiltersValue.trait || hero.traitIds.includes(this.heroFiltersValue.trait);
+        const matchesKeyword =
+          !keyword ||
+          hero.name.includes(keyword) ||
+          hero.skillName.includes(keyword) ||
+          hero.classNames.some((name) => name.includes(keyword)) ||
+          hero.traitNames.some((name) => name.includes(keyword));
+        const matchesCost =
+          !this.heroFiltersValue.cost ||
+          hero.cost === this.heroFiltersValue.cost;
+        const matchesClass =
+          !this.heroFiltersValue.class ||
+          hero.classIds.includes(this.heroFiltersValue.class);
+        const matchesTrait =
+          !this.heroFiltersValue.trait ||
+          hero.traitIds.includes(this.heroFiltersValue.trait);
         return matchesKeyword && matchesCost && matchesClass && matchesTrait;
       });
     },
@@ -402,7 +583,8 @@ export default {
       const recipes = [];
       this.baseItems.forEach((rowItem, rowIndex) => {
         this.baseItems.forEach((colItem, colIndex) => {
-          const paletteIndex = (rowIndex * 3 + colIndex * 5) % recipePalette.length;
+          const paletteIndex =
+            (rowIndex * 3 + colIndex * 5) % recipePalette.length;
           recipes.push({
             key: `${rowItem.key}-${colItem.key}`,
             label: `${rowItem.label}${colItem.label}`,
@@ -419,19 +601,25 @@ export default {
   methods: {
     async loadSeasonData() {
       this.loading = true;
-      this.loadError = '';
+      this.loadError = "";
       try {
         const [heroes, traits, equips, hexes, gods] = await Promise.all([
-          requestApi('/api/heroes', { show_only: true }),
-          requestApi('/api/traits'),
-          requestApi('/api/equips'),
-          requestApi('/api/hexes'),
-          requestApi('/api/gods'),
+          requestApi("/api/heroes", { show_only: true }),
+          requestApi("/api/traits"),
+          requestApi("/api/equips"),
+          requestApi("/api/hexes"),
+          requestApi("/api/gods"),
         ]);
 
         const mappedTraits = this.mapTraits(traits.items || []);
 
-        this.seasonMeta = heroes.meta || traits.meta || equips.meta || hexes.meta || gods.meta || null;
+        this.seasonMeta =
+          heroes.meta ||
+          traits.meta ||
+          equips.meta ||
+          hexes.meta ||
+          gods.meta ||
+          null;
         this.traits = mappedTraits;
         this.traitNameMap = this.buildTraitNameMap(mappedTraits);
         this.heroes = this.mapHeroes(heroes.items || []);
@@ -440,44 +628,50 @@ export default {
         this.runes = this.mapRunes(hexes.items || []);
         this.gods = this.mapGods(gods.items || []);
       } catch (error) {
-        this.loadError = 'Season API request failed';
+        this.loadError = "Season API request failed";
       } finally {
         this.loading = false;
       }
     },
     toggleHeroFilter(key) {
-      this.activeHeroFilter = this.activeHeroFilter === key ? '' : key;
+      this.activeHeroFilter = this.activeHeroFilter === key ? "" : key;
     },
     selectHeroFilter(key, value) {
       this.heroFiltersValue[key] = value;
-      this.activeHeroFilter = '';
+      this.activeHeroFilter = "";
     },
     resetHeroFilters() {
-      this.heroKeyword = '';
+      this.heroKeyword = "";
       this.heroFiltersValue = {
-        cost: '',
-        class: '',
-        trait: '',
+        cost: "",
+        class: "",
+        trait: "",
       };
-      this.activeHeroFilter = '';
+      this.activeHeroFilter = "";
     },
     openHeroDetail(hero) {
       uni.navigateTo({
-        url: `/pages/season/detail?id=${encodeURIComponent(hero.raw?.id || hero.id || '')}`,
+        url: `/pages/season/detail?id=${encodeURIComponent(hero.raw?.id || hero.id || "")}`,
       });
     },
     heroFilterValue(key) {
-      return this.heroFiltersValue[key] || '';
+      return this.heroFiltersValue[key] || "";
     },
     heroFilterLabel(filter) {
       const value = this.heroFilterValue(filter.key);
       if (!value) return filter.label;
-      if (filter.key === 'cost') return `${value}费`;
-      if (filter.key === 'class') {
-        return this.heroClassOptions.find((option) => option.value === value)?.label || filter.label;
+      if (filter.key === "cost") return `${value}费`;
+      if (filter.key === "class") {
+        return (
+          this.heroClassOptions.find((option) => option.value === value)
+            ?.label || filter.label
+        );
       }
-      if (filter.key === 'trait') {
-        return this.heroTraitOptions.find((option) => option.value === value)?.label || filter.label;
+      if (filter.key === "trait") {
+        return (
+          this.heroTraitOptions.find((option) => option.value === value)
+            ?.label || filter.label
+        );
       }
       return filter.label;
     },
@@ -486,18 +680,22 @@ export default {
       items
         .filter((hero) => {
           const price = Number(hero.price || 0);
-          return compactText(hero.name) && compactText(hero.showHeroTag, '1') === '1' && price > 0;
+          return (
+            compactText(hero.name) &&
+            compactText(hero.showHeroTag, "1") === "1" &&
+            price > 0
+          );
         })
         .forEach((hero) => {
-          const cost = compactText(hero.price, '0');
+          const cost = compactText(hero.price, "0");
           const classIds = splitIds(hero.class);
           const traitIds = splitIds(hero.species);
           const key = [
             compactText(hero.name),
             cost,
-            traitIds.join('|'),
-            classIds.join('|'),
-          ].join('__');
+            traitIds.join("|"),
+            classIds.join("|"),
+          ].join("__");
           const star = this.getHeroStar(hero);
           if (!heroGroups.has(key)) {
             heroGroups.set(key, { classIds, traitIds, variants: [] });
@@ -512,22 +710,29 @@ export default {
 
       return Array.from(heroGroups.values())
         .map((group) => {
-          group.variants.sort((a, b) => a.star - b.star || Number(a.raw.id || 0) - Number(b.raw.id || 0));
+          group.variants.sort(
+            (a, b) =>
+              a.star - b.star || Number(a.raw.id || 0) - Number(b.raw.id || 0),
+          );
           group.raw = group.variants[0].raw;
           return group;
         })
-        .sort((a, b) => Number(a.raw.price || 0) - Number(b.raw.price || 0) || compactText(a.raw.name).localeCompare(compactText(b.raw.name)))
+        .sort(
+          (a, b) =>
+            Number(a.raw.price || 0) - Number(b.raw.price || 0) ||
+            compactText(a.raw.name).localeCompare(compactText(b.raw.name)),
+        )
         .map(({ raw: hero, classIds, traitIds, variants }, index) => ({
           id: [
             compactText(hero.name),
             compactText(hero.price),
-            traitIds.join('|'),
-            classIds.join('|'),
-          ].join('__'),
+            traitIds.join("|"),
+            classIds.join("|"),
+          ].join("__"),
           name: compactText(hero.name),
-          views: compactText(hero.skillName, compactText(hero.tftHeroId, '')),
+          views: compactText(hero.skillName, compactText(hero.tftHeroId, "")),
           skillName: compactText(hero.skillName),
-          cost: compactText(hero.price, '0'),
+          cost: compactText(hero.price, "0"),
           classIds,
           traitIds,
           classNames: classIds.map((id) => this.traitNameMap[id] || id),
@@ -558,8 +763,12 @@ export default {
       const classMap = new Map();
       const traitMap = new Map();
       heroes.forEach((hero) => {
-        hero.classIds.forEach((id) => classMap.set(id, this.traitNameMap[id] || id));
-        hero.traitIds.forEach((id) => traitMap.set(id, this.traitNameMap[id] || id));
+        hero.classIds.forEach((id) =>
+          classMap.set(id, this.traitNameMap[id] || id),
+        );
+        hero.traitIds.forEach((id) =>
+          traitMap.set(id, this.traitNameMap[id] || id),
+        );
       });
       this.heroClassOptions = this.sortFilterOptions(classMap);
       this.heroTraitOptions = this.sortFilterOptions(traitMap);
@@ -567,7 +776,7 @@ export default {
     sortFilterOptions(optionMap) {
       return Array.from(optionMap.entries())
         .map(([value, label]) => ({ value, label }))
-        .sort((a, b) => a.label.localeCompare(b.label, 'zh-Hans-CN'));
+        .sort((a, b) => a.label.localeCompare(b.label, "zh-Hans-CN"));
     },
     mapTraits(items) {
       const grouped = new Map();
@@ -589,7 +798,11 @@ export default {
     },
     setEquips(items) {
       const nextBaseItems = items
-        .filter((item) => compactText(item.synthesis1, '0') === '0' && compactText(item.synthesis2, '0') === '0')
+        .filter(
+          (item) =>
+            compactText(item.synthesis1, "0") === "0" &&
+            compactText(item.synthesis2, "0") === "0",
+        )
         .slice(0, 10)
         .map((item, index) => ({
           key: compactText(item.id, `base-${index}`),
@@ -607,7 +820,7 @@ export default {
       items.forEach((item, index) => {
         const s1 = compactText(item.synthesis1);
         const s2 = compactText(item.synthesis2);
-        if (!s1 || !s2 || s1 === '0' || s2 === '0') return;
+        if (!s1 || !s2 || s1 === "0" || s2 === "0") return;
         recipeMap.set(`${s1}-${s2}`, { item, index });
         recipeMap.set(`${s2}-${s1}`, { item, index });
       });
@@ -616,11 +829,14 @@ export default {
       this.baseItems.forEach((rowItem, rowIndex) => {
         this.baseItems.forEach((colItem, colIndex) => {
           const match = recipeMap.get(`${rowItem.key}-${colItem.key}`);
-          const paletteIndex = (rowIndex * 3 + colIndex * 5) % recipePalette.length;
+          const paletteIndex =
+            (rowIndex * 3 + colIndex * 5) % recipePalette.length;
           recipes.push({
             key: `${rowItem.key}-${colItem.key}`,
-            label: match ? firstChar(match.item.name) : `${rowItem.label}${colItem.label}`,
-            name: match ? compactText(match.item.name) : '',
+            label: match
+              ? firstChar(match.item.name)
+              : `${rowItem.label}${colItem.label}`,
+            name: match ? compactText(match.item.name) : "",
             picture: match?.item?.picture,
             bg: recipePalette[paletteIndex],
           });
@@ -629,13 +845,16 @@ export default {
       return recipes;
     },
     mapRunes(items) {
-      return items.slice(0, 40).map((rune, index) => ({
+      return items.map((rune, index) => ({
         id: rune.id,
         name: compactText(rune.name),
         icon: firstChar(rune.name),
         iconUrl: rune.icon,
         desc: compactText(rune.desc),
-        tags: [compactText(rune.level, '0')].filter(Boolean).map((level) => `Lv.${level}`),
+        level: compactText(rune.level, "0"),
+        tags: [compactText(rune.level, "0")]
+          .filter(Boolean)
+          .map((level) => `Lv.${level}`),
         tone: tonePalette[index % tonePalette.length],
       }));
     },
@@ -669,7 +888,11 @@ export default {
   border-bottom: 1rpx solid rgba(226, 176, 108, 0.45);
   border-radius: 0 0 34rpx 34rpx;
   background:
-    radial-gradient(circle at 46% 0%, rgba(211, 136, 71, 0.18), transparent 18%),
+    radial-gradient(
+      circle at 46% 0%,
+      rgba(211, 136, 71, 0.18),
+      transparent 18%
+    ),
     radial-gradient(circle at 20% 0%, rgba(95, 48, 171, 0.62), transparent 46%),
     linear-gradient(135deg, #16091f 0%, #351a49 52%, #12091b 100%);
 }
@@ -741,7 +964,11 @@ export default {
 
 .tab-item.active {
   color: #ffe3a5;
-  background: linear-gradient(180deg, rgba(216, 149, 72, 0.18), rgba(216, 149, 72, 0.02));
+  background: linear-gradient(
+    180deg,
+    rgba(216, 149, 72, 0.18),
+    rgba(216, 149, 72, 0.02)
+  );
 }
 
 .tab-item.active::after {
@@ -751,7 +978,7 @@ export default {
   bottom: 0;
   height: 4rpx;
   background: linear-gradient(90deg, transparent, #e6ad58, transparent);
-  content: '';
+  content: "";
 }
 
 .tab-icon {
@@ -768,7 +995,11 @@ export default {
 .content-scroll {
   height: calc(100vh - 260rpx - var(--status-bar-height));
   background:
-    radial-gradient(circle at 100% 4%, rgba(111, 65, 138, 0.24), transparent 30%),
+    radial-gradient(
+      circle at 100% 4%,
+      rgba(111, 65, 138, 0.24),
+      transparent 30%
+    ),
     linear-gradient(180deg, #21102a 0%, #35173a 100%);
 }
 
@@ -927,18 +1158,6 @@ export default {
   color: #e8c896;
 }
 
-.guide-card {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24rpx;
-  min-height: 280rpx;
-  margin-top: 28rpx;
-  padding: 18rpx;
-  border: 1rpx solid rgba(221, 166, 100, 0.54);
-  border-radius: 16rpx;
-  background: rgba(255, 255, 255, 0.05);
-}
-
 .guide-bg {
   position: relative;
   min-height: 244rpx;
@@ -978,10 +1197,22 @@ export default {
   border-radius: 4rpx;
 }
 
-.mini-1,.mini-5 { background: #c99b39; }
-.mini-2,.mini-6 { background: #286bd8; }
-.mini-3,.mini-7 { background: #7932b8; }
-.mini-4,.mini-8 { background: #1b994f; }
+.mini-1,
+.mini-5 {
+  background: #c99b39;
+}
+.mini-2,
+.mini-6 {
+  background: #286bd8;
+}
+.mini-3,
+.mini-7 {
+  background: #7932b8;
+}
+.mini-4,
+.mini-8 {
+  background: #1b994f;
+}
 
 .guide-copy {
   padding: 12rpx 0;
@@ -1069,7 +1300,7 @@ export default {
   inset: 1rpx;
   border: 1rpx solid rgba(255, 255, 255, 0.06);
   border-radius: 12rpx;
-  content: '';
+  content: "";
   pointer-events: none;
 }
 
@@ -1086,15 +1317,43 @@ export default {
 }
 
 .hero-shade {
-  background: linear-gradient(180deg, transparent 35%, rgba(17, 7, 23, 0.86) 100%);
+  background: linear-gradient(
+    180deg,
+    transparent 35%,
+    rgba(17, 7, 23, 0.86) 100%
+  );
 }
 
-.hero-one { background: radial-gradient(circle at 66% 28%, #dcc067, transparent 20%), linear-gradient(135deg, #33205f, #7548ec 48%, #16091f); }
-.hero-two { background: radial-gradient(circle at 70% 26%, #f0b16f, transparent 22%), linear-gradient(135deg, #122b55, #23a1e4 48%, #16091f); }
-.hero-three { background: radial-gradient(circle at 25% 28%, #6dc7ff, transparent 24%), linear-gradient(135deg, #17235b, #435df0 52%, #16091f); }
-.hero-four { background: radial-gradient(circle at 65% 42%, #78fff3, transparent 24%), linear-gradient(135deg, #3f2261, #31c4bc 48%, #16091f); }
-.hero-five { background: radial-gradient(circle at 20% 26%, #f49133, transparent 23%), linear-gradient(135deg, #38162d, #a44d20 52%, #16091f); }
-.hero-six { background: radial-gradient(circle at 60% 30%, #c66cff, transparent 24%), linear-gradient(135deg, #1b1d61, #7433cd 52%, #16091f); }
+.hero-one {
+  background:
+    radial-gradient(circle at 66% 28%, #dcc067, transparent 20%),
+    linear-gradient(135deg, #33205f, #7548ec 48%, #16091f);
+}
+.hero-two {
+  background:
+    radial-gradient(circle at 70% 26%, #f0b16f, transparent 22%),
+    linear-gradient(135deg, #122b55, #23a1e4 48%, #16091f);
+}
+.hero-three {
+  background:
+    radial-gradient(circle at 25% 28%, #6dc7ff, transparent 24%),
+    linear-gradient(135deg, #17235b, #435df0 52%, #16091f);
+}
+.hero-four {
+  background:
+    radial-gradient(circle at 65% 42%, #78fff3, transparent 24%),
+    linear-gradient(135deg, #3f2261, #31c4bc 48%, #16091f);
+}
+.hero-five {
+  background:
+    radial-gradient(circle at 20% 26%, #f49133, transparent 23%),
+    linear-gradient(135deg, #38162d, #a44d20 52%, #16091f);
+}
+.hero-six {
+  background:
+    radial-gradient(circle at 60% 30%, #c66cff, transparent 24%),
+    linear-gradient(135deg, #1b1d61, #7433cd 52%, #16091f);
+}
 
 .cost-badge {
   position: absolute;
@@ -1175,8 +1434,19 @@ export default {
   overflow: hidden;
   border-radius: 30rpx 30rpx 0 0;
   background:
-    linear-gradient(180deg, rgba(57, 36, 102, 0.88), rgba(23, 12, 36, 0.96) 38%, #14091d 100%),
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.035) 0, rgba(255, 255, 255, 0.035) 1rpx, transparent 1rpx, transparent 6rpx);
+    linear-gradient(
+      180deg,
+      rgba(57, 36, 102, 0.88),
+      rgba(23, 12, 36, 0.96) 38%,
+      #14091d 100%
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.035) 0,
+      rgba(255, 255, 255, 0.035) 1rpx,
+      transparent 1rpx,
+      transparent 6rpx
+    );
 }
 
 .detail-page-scroll {
@@ -1202,8 +1472,18 @@ export default {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(90deg, rgba(14, 7, 24, 0.78) 0%, rgba(14, 7, 24, 0.18) 56%, rgba(14, 7, 24, 0.7) 100%),
-    linear-gradient(180deg, rgba(14, 7, 24, 0.2) 0%, rgba(14, 7, 24, 0.18) 45%, #201037 100%);
+    linear-gradient(
+      90deg,
+      rgba(14, 7, 24, 0.78) 0%,
+      rgba(14, 7, 24, 0.18) 56%,
+      rgba(14, 7, 24, 0.7) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(14, 7, 24, 0.2) 0%,
+      rgba(14, 7, 24, 0.18) 45%,
+      #201037 100%
+    );
 }
 
 .detail-close {
@@ -1290,7 +1570,11 @@ export default {
   border: 1rpx solid rgba(221, 166, 100, 0.24);
   border-radius: 18rpx;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.035)),
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.08),
+      rgba(255, 255, 255, 0.035)
+    ),
     rgba(19, 9, 31, 0.66);
   box-shadow: inset 0 1rpx 0 rgba(255, 255, 255, 0.08);
 }
@@ -1741,6 +2025,40 @@ export default {
   gap: 18rpx;
 }
 
+.rune-level-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12rpx;
+  margin-bottom: 16rpx;
+}
+
+.rune-level-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 58rpx;
+  border: 1rpx solid rgba(221, 166, 100, 0.24);
+  border-radius: 14rpx;
+  color: rgba(245, 230, 203, 0.7);
+  font-size: 23rpx;
+  font-weight: 900;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.rune-level-tab.active {
+  color: #241426;
+  border-color: rgba(255, 224, 163, 0.88);
+  background: linear-gradient(135deg, #ffe0a3, #c48b43);
+  box-shadow: 0 12rpx 26rpx rgba(196, 139, 67, 0.22);
+}
+
+.rune-summary {
+  margin-bottom: 16rpx;
+  color: rgba(235, 214, 194, 0.58);
+  font-size: 22rpx;
+  font-weight: 900;
+}
+
 .rune-card {
   min-height: 246rpx;
   padding: 22rpx;
@@ -1786,8 +2104,16 @@ export default {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 72% 38%, rgba(255, 205, 130, 0.68), transparent 18%),
-    radial-gradient(circle at 42% 55%, rgba(112, 61, 176, 0.7), transparent 34%),
+    radial-gradient(
+      circle at 72% 38%,
+      rgba(255, 205, 130, 0.68),
+      transparent 18%
+    ),
+    radial-gradient(
+      circle at 42% 55%,
+      rgba(112, 61, 176, 0.7),
+      transparent 34%
+    ),
     linear-gradient(135deg, #241137, #5a2b76 52%, #16091f);
 }
 
@@ -1855,30 +2181,104 @@ export default {
   font-size: 42rpx;
 }
 
-.tone-gold { background: linear-gradient(135deg, #ffe0a3, #a97334); }
-.tone-blue { background: linear-gradient(135deg, #7fd7ff, #1b5fb9); }
-.tone-violet { background: linear-gradient(135deg, #be8bff, #5631b3); }
-.tone-rose { background: linear-gradient(135deg, #ff91ad, #9b2948); }
+.tone-gold {
+  background: linear-gradient(135deg, #ffe0a3, #a97334);
+}
+.tone-blue {
+  background: linear-gradient(135deg, #7fd7ff, #1b5fb9);
+}
+.tone-violet {
+  background: linear-gradient(135deg, #be8bff, #5631b3);
+}
+.tone-rose {
+  background: linear-gradient(135deg, #ff91ad, #9b2948);
+}
 
-.bg-sword { background: linear-gradient(135deg, #1b2a66, #e1c86e 52%, #402616); }
-.bg-bow { background: linear-gradient(135deg, #283b1c, #c7d092 50%, #3a2614); }
-.bg-rod { background: radial-gradient(circle at 62% 32%, #ff9de6, transparent 24%), linear-gradient(135deg, #36104e, #b932a0 55%, #1b0c27); }
-.bg-tear { background: radial-gradient(circle at 55% 36%, #55d7ff, transparent 28%), linear-gradient(135deg, #10225a, #164fde 58%, #070d2c); }
-.bg-vest { background: linear-gradient(135deg, #153b49, #5fc3bf 48%, #1b2229); }
-.bg-cloak { background: linear-gradient(135deg, #fff0a8, #a67836 46%, #463322); }
-.bg-belt { background: linear-gradient(135deg, #372313, #a36f43 45%, #e6c29a); }
-.bg-glove { background: linear-gradient(135deg, #f1e06c, #b59c1e 48%, #2a240d); }
-.bg-pan { background: linear-gradient(135deg, #3a3a3a, #a8a29a 48%, #171717); }
-.bg-spatula { background: radial-gradient(circle at 46% 44%, #fff07a, transparent 24%), linear-gradient(135deg, #563c16, #d6a328 58%, #3b2608); }
+.bg-sword {
+  background: linear-gradient(135deg, #1b2a66, #e1c86e 52%, #402616);
+}
+.bg-bow {
+  background: linear-gradient(135deg, #283b1c, #c7d092 50%, #3a2614);
+}
+.bg-rod {
+  background:
+    radial-gradient(circle at 62% 32%, #ff9de6, transparent 24%),
+    linear-gradient(135deg, #36104e, #b932a0 55%, #1b0c27);
+}
+.bg-tear {
+  background:
+    radial-gradient(circle at 55% 36%, #55d7ff, transparent 28%),
+    linear-gradient(135deg, #10225a, #164fde 58%, #070d2c);
+}
+.bg-vest {
+  background: linear-gradient(135deg, #153b49, #5fc3bf 48%, #1b2229);
+}
+.bg-cloak {
+  background: linear-gradient(135deg, #fff0a8, #a67836 46%, #463322);
+}
+.bg-belt {
+  background: linear-gradient(135deg, #372313, #a36f43 45%, #e6c29a);
+}
+.bg-glove {
+  background: linear-gradient(135deg, #f1e06c, #b59c1e 48%, #2a240d);
+}
+.bg-pan {
+  background: linear-gradient(135deg, #3a3a3a, #a8a29a 48%, #171717);
+}
+.bg-spatula {
+  background:
+    radial-gradient(circle at 46% 44%, #fff07a, transparent 24%),
+    linear-gradient(135deg, #563c16, #d6a328 58%, #3b2608);
+}
 
-.recipe-flame { background: radial-gradient(circle at 58% 36%, #ffcf72, transparent 24%), linear-gradient(135deg, #4b1111, #f36b20 55%, #220807); }
-.recipe-tide { background: radial-gradient(circle at 56% 34%, #a5f8ff, transparent 25%), linear-gradient(135deg, #0d3954, #218dd9 56%, #091626); }
-.recipe-venom { background: radial-gradient(circle at 58% 36%, #bbff90, transparent 24%), linear-gradient(135deg, #123a22, #22a35a 55%, #08180f); }
-.recipe-storm { background: radial-gradient(circle at 58% 36%, #e2f0ff, transparent 22%), linear-gradient(135deg, #271f5c, #5f7cff 55%, #100a24); }
-.recipe-void { background: radial-gradient(circle at 58% 36%, #d897ff, transparent 24%), linear-gradient(135deg, #35184e, #8c35b3 55%, #16091f); }
-.recipe-gold { background: radial-gradient(circle at 58% 36%, #fff2a7, transparent 24%), linear-gradient(135deg, #5a3714, #d9962b 55%, #1d1207); }
-.recipe-iron { background: radial-gradient(circle at 58% 36%, #d3dde6, transparent 22%), linear-gradient(135deg, #242d36, #738391 55%, #0e1115); }
-.recipe-star { background: radial-gradient(circle at 58% 36%, #ffffff, transparent 20%), linear-gradient(135deg, #363e8a, #9aa7ff 55%, #151833); }
-.recipe-sigil { background: radial-gradient(circle at 58% 36%, #ffafda, transparent 23%), linear-gradient(135deg, #4a1738, #d35a94 55%, #1d0a18); }
-.recipe-spirit { background: radial-gradient(circle at 58% 36%, #f7fff1, transparent 22%), linear-gradient(135deg, #2b4e3b, #9dcc8a 55%, #111c13); }
+.recipe-flame {
+  background:
+    radial-gradient(circle at 58% 36%, #ffcf72, transparent 24%),
+    linear-gradient(135deg, #4b1111, #f36b20 55%, #220807);
+}
+.recipe-tide {
+  background:
+    radial-gradient(circle at 56% 34%, #a5f8ff, transparent 25%),
+    linear-gradient(135deg, #0d3954, #218dd9 56%, #091626);
+}
+.recipe-venom {
+  background:
+    radial-gradient(circle at 58% 36%, #bbff90, transparent 24%),
+    linear-gradient(135deg, #123a22, #22a35a 55%, #08180f);
+}
+.recipe-storm {
+  background:
+    radial-gradient(circle at 58% 36%, #e2f0ff, transparent 22%),
+    linear-gradient(135deg, #271f5c, #5f7cff 55%, #100a24);
+}
+.recipe-void {
+  background:
+    radial-gradient(circle at 58% 36%, #d897ff, transparent 24%),
+    linear-gradient(135deg, #35184e, #8c35b3 55%, #16091f);
+}
+.recipe-gold {
+  background:
+    radial-gradient(circle at 58% 36%, #fff2a7, transparent 24%),
+    linear-gradient(135deg, #5a3714, #d9962b 55%, #1d1207);
+}
+.recipe-iron {
+  background:
+    radial-gradient(circle at 58% 36%, #d3dde6, transparent 22%),
+    linear-gradient(135deg, #242d36, #738391 55%, #0e1115);
+}
+.recipe-star {
+  background:
+    radial-gradient(circle at 58% 36%, #ffffff, transparent 20%),
+    linear-gradient(135deg, #363e8a, #9aa7ff 55%, #151833);
+}
+.recipe-sigil {
+  background:
+    radial-gradient(circle at 58% 36%, #ffafda, transparent 23%),
+    linear-gradient(135deg, #4a1738, #d35a94 55%, #1d0a18);
+}
+.recipe-spirit {
+  background:
+    radial-gradient(circle at 58% 36%, #f7fff1, transparent 22%),
+    linear-gradient(135deg, #2b4e3b, #9dcc8a 55%, #111c13);
+}
 </style>
