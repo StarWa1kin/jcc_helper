@@ -283,11 +283,11 @@
                 <view class="mini-mark">属</view>
                 <view class="section-title-copy">
                   <text class="detail-section-title">属性</text>
-                  <text class="detail-section-sub">当前星级基础面板</text>
+                  <text class="detail-section-sub">1星 / 2星 / 3星 / 4星</text>
                 </view>
               </view>
               <view class="stat-grid">
-                <view v-for="stat in selectedHeroStats" :key="stat.label" class="stat-cell">
+                <view v-for="stat in selectedHeroStarStats" :key="stat.label" class="stat-cell">
                   <text class="stat-label">{{ stat.label }}</text>
                   <text class="stat-value">{{ stat.value }}</text>
                 </view>
@@ -558,6 +558,31 @@ export default {
         .filter((hero) => hero.sharedCount > 0)
         .sort((a, b) => b.sharedCount - a.sharedCount || Number(a.cost || 0) - Number(b.cost || 0))
         .slice(0, 12);
+    },
+    selectedHeroStarStats() {
+      const variants = this.selectedHeroStarOptions.length
+        ? this.selectedHeroStarOptions
+        : [{ raw: this.activeSelectedHero?.raw || {} }];
+      const joinValues = (field, fallback = '-') => variants
+        .map((variant) => compactText(variant.raw?.[field], fallback))
+        .join('/');
+      const joinMana = () => variants
+        .map((variant) => {
+          const raw = variant.raw || {};
+          return `${compactText(raw.initMP, '0')}/${compactText(raw.maxMP, '0')}`;
+        })
+        .join('/');
+      return [
+        { label: '生命', value: joinValues('initHP') },
+        { label: '暴击率', value: joinValues('criticalStrikeChance') },
+        { label: '护甲', value: joinValues('armor') },
+        { label: '攻击距离', value: joinValues('attackRange') },
+        { label: '魔抗', value: joinValues('magicResist') },
+        { label: '初始法力值', value: joinMana() },
+        { label: '物攻', value: joinValues('initAttackDamage') },
+        { label: '法力值', value: joinValues('maxMP') },
+        { label: '攻速', value: joinValues('attackSpeed') },
+      ];
     },
     selectedHeroStats() {
       if (!this.activeSelectedHero) return [];
@@ -1640,10 +1665,11 @@ export default {
 
 .stat-cell {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  min-height: 70rpx;
-  padding: 0 16rpx;
+  gap: 12rpx;
+  min-height: 82rpx;
+  padding: 14rpx 16rpx;
   border: 1rpx solid rgba(255, 255, 255, 0.06);
   border-radius: 14rpx;
   background: rgba(18, 9, 27, 0.42);
@@ -1655,15 +1681,20 @@ export default {
 }
 
 .stat-label {
+  flex: 0 0 auto;
   color: rgba(235, 214, 194, 0.54);
   font-size: 22rpx;
   font-weight: 800;
 }
 
 .stat-value {
+  min-width: 0;
   color: #fff2dc;
-  font-size: 23rpx;
+  font-size: 22rpx;
   font-weight: 900;
+  line-height: 32rpx;
+  text-align: right;
+  word-break: break-all;
 }
 
 .trait-detail-list {
