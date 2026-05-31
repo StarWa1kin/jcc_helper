@@ -246,7 +246,10 @@
           <view
             v-for="level in runeLevelFilters"
             :key="level.value"
-            :class="['rune-level-tab', activeRuneLevel === level.value ? 'active' : '']"
+            :class="[
+              'rune-level-tab',
+              activeRuneLevel === level.value ? 'active' : '',
+            ]"
             @tap="activeRuneLevel = level.value"
           >
             <text>{{ level.label }}</text>
@@ -280,27 +283,69 @@
       </view>
 
       <view v-else class="tab-panel god-panel">
-        <view class="god-hero">
-          <view class="god-bg"></view>
-          <text class="god-title">神明资料</text>
-          <text class="god-desc">查看神明机制、选择建议和阵容适配关系。</text>
+        <view class="god-mobile-hero">
+          <text class="god-kicker">星神</text>
+          <text class="god-title">神明奖励</text>
+          <text class="god-desc">按类别检索每个阶段可获得的神明愿望。</text>
         </view>
+
+        <view class="god-filter-panel">
+          <view class="god-search">
+            <text class="search-icon">⌕</text>
+            <input
+              v-model="godKeyword"
+              class="god-search-input"
+              placeholder="搜索神明或奖励"
+              placeholder-class="placeholder"
+            />
+          </view>
+          <scroll-view scroll-x class="god-category-scroll">
+            <view class="god-category-row">
+              <view
+                v-for="category in godCategoryFilters"
+                :key="category.value"
+                :class="[
+                  'god-category-pill',
+                  activeGodCategory === category.value ? 'active' : '',
+                ]"
+                @tap="activeGodCategory = category.value"
+              >
+                <text>{{ category.label }}</text>
+              </view>
+            </view>
+          </scroll-view>
+          <text class="god-summary">{{ visibleGodWishes.length }} / {{ allGodWishes.length }}</text>
+        </view>
+
         <view class="god-list">
-          <view v-for="god in gods" :key="god.id || god.name" class="god-card">
-            <view :class="['god-icon', god.tone]">
+          <view
+            v-for="wish in visibleGodWishes"
+            :key="wish.id"
+            class="god-card"
+          >
+            <view class="god-card-top">
               <image
-                v-if="god.iconUrl"
-                :src="god.iconUrl"
+                v-if="wish.icon"
+                :src="wish.icon"
                 mode="aspectFit"
-                class="data-icon"
+                class="god-wish-icon"
               ></image>
-              <text v-else>{{ god.icon }}</text>
+              <view v-else :class="['god-wish-icon', wish.tone]">{{ wish.iconText }}</view>
+              <view class="god-card-title">
+                <text class="god-name">{{ wish.name }}</text>
+                <text class="god-source">{{ wish.godName }} · {{ wish.stage }}阶段</text>
+              </view>
             </view>
-            <view>
-              <text class="god-name">{{ god.name }}</text>
-              <text class="god-tip">{{ god.tip }}</text>
+            <view class="god-tags">
+              <text
+                v-for="tag in wish.tags"
+                :key="`${wish.id}-${tag.value}`"
+                :class="['god-tag', tag.className]"
+              >
+                {{ tag.label }}
+              </text>
             </view>
-            <text class="god-arrow">›</text>
+            <text class="god-tip">{{ wish.desc }}</text>
           </view>
         </view>
       </view>
@@ -409,6 +454,8 @@ export default {
       heroKeyword: "",
       activeHeroFilter: "",
       activeRuneLevel: "",
+      activeGodCategory: "",
+      godKeyword: "",
       loading: false,
       loadError: "",
       seasonMeta: null,
@@ -437,6 +484,13 @@ export default {
         { value: "1", label: "一级" },
         { value: "2", label: "二级" },
         { value: "3", label: "三级" },
+      ],
+      godCategoryFilters: [
+        { value: "", label: "全部" },
+        { value: "1", label: "经济类" },
+        { value: "2", label: "战力类" },
+        { value: "3", label: "道具类" },
+        { value: "4", label: "功能类" },
       ],
       heroes: [
         { name: "崔斯特", views: "12.3万", cost: "1", bg: "hero-one" },
@@ -556,6 +610,23 @@ export default {
     visibleRunes() {
       if (!this.activeRuneLevel) return this.runes;
       return this.runes.filter((rune) => rune.level === this.activeRuneLevel);
+    },
+    allGodWishes() {
+      return this.gods.flatMap((god) => god.wishes || []);
+    },
+    visibleGodWishes() {
+      const keyword = this.godKeyword.trim();
+      return this.allGodWishes.filter((wish) => {
+        const matchesCategory =
+          !this.activeGodCategory ||
+          wish.typeIds.includes(this.activeGodCategory);
+        const matchesKeyword =
+          !keyword ||
+          wish.name.includes(keyword) ||
+          wish.godName.includes(keyword) ||
+          wish.desc.includes(keyword);
+        return matchesCategory && matchesKeyword;
+      });
     },
     visibleHeroes() {
       const keyword = this.heroKeyword.trim();
@@ -859,14 +930,51 @@ export default {
       }));
     },
     mapGods(items) {
-      return items.map((god, index) => ({
-        id: god.godId,
-        name: compactText(god.godName),
-        icon: firstChar(god.godName),
-        iconUrl: god.godIcon || god.tex,
-        tip: compactText(god.godTips),
-        tone: tonePalette[index % tonePalette.length],
-      }));
+      return items.map((god, index) => {
+        const tone = tonePalette[index % tonePalette.length];
+        const godName = compactText(god.godName);
+        return {
+          id: god.godId,
+          name: godName,
+          icon: firstChar(godName),
+          iconUrl: god.godIcon || god.tex,
+          tip: compactText(god.godTips),
+          tone,
+          wishes: this.mapGodWishes(god, tone),
+        };
+      });
+    },
+    mapGodWishes(god, tone) {
+      const godName = compactText(god.godName);
+      return (god.stages || []).flatMap((stage) =>
+        (stage.wishes || []).map((wish) => {
+          const typeIds = splitIds(wish.type);
+          return {
+            id: `${god.godId}-${stage.num}-${wish.id}`,
+            name: compactText(wish.name),
+            desc: compactText(wish.desc),
+            icon: wish.icon,
+            iconText: firstChar(wish.name),
+            godName,
+            stage: compactText(stage.num),
+            typeIds,
+            tags: typeIds.map((type) => this.mapGodWishType(type)),
+            tone,
+          };
+        }),
+      );
+    },
+    mapGodWishType(type) {
+      const typeMap = {
+        1: { label: "经济类", className: "economy" },
+        2: { label: "战力类", className: "combat" },
+        3: { label: "道具类", className: "item" },
+        4: { label: "功能类", className: "utility" },
+      };
+      return {
+        value: type,
+        ...(typeMap[type] || { label: "其他", className: "other" }),
+      };
     },
   },
 };
@@ -2064,7 +2172,7 @@ export default {
   padding: 22rpx;
   border: 1rpx solid rgba(221, 166, 100, 0.32);
   border-radius: 18rpx;
-  background: rgba(255, 255, 255, 0.055);
+  background: #684bbe;
 }
 
 .rune-mark {
@@ -2090,108 +2198,233 @@ export default {
   line-height: 33rpx;
 }
 
-.god-hero {
+.god-mobile-hero {
   position: relative;
-  min-height: 330rpx;
+  min-height: 220rpx;
   overflow: hidden;
-  padding: 34rpx;
+  padding: 30rpx;
   border: 1rpx solid rgba(221, 166, 100, 0.44);
-  border-radius: 22rpx;
-  background: rgba(255, 255, 255, 0.055);
-}
-
-.god-bg {
-  position: absolute;
-  inset: 0;
+  border-radius: 20rpx;
   background:
-    radial-gradient(
-      circle at 72% 38%,
-      rgba(255, 205, 130, 0.68),
-      transparent 18%
-    ),
-    radial-gradient(
-      circle at 42% 55%,
-      rgba(112, 61, 176, 0.7),
-      transparent 34%
-    ),
-    linear-gradient(135deg, #241137, #5a2b76 52%, #16091f);
+    linear-gradient(90deg, rgba(104, 75, 190, 0.96), rgba(104, 75, 190, 0.48)),
+    radial-gradient(circle at 86% 28%, rgba(255, 205, 130, 0.58), transparent 22%),
+    linear-gradient(135deg, #25123a, #684bbe 58%, #16091f);
 }
 
+.god-kicker,
 .god-title,
-.god-desc {
-  position: relative;
+.god-desc,
+.god-summary {
   display: block;
 }
 
+.god-kicker {
+  width: 160rpx;
+  height: 52rpx;
+  border: 1rpx solid rgba(255, 227, 165, 0.42);
+  border-radius: 12rpx;
+  color: #fff2dc;
+  font-size: 25rpx;
+  font-weight: 900;
+  line-height: 52rpx;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.12);
+}
+
 .god-title {
+  margin-top: 28rpx;
   color: #fff1d5;
-  font-size: 42rpx;
+  font-size: 44rpx;
   font-weight: 900;
 }
 
 .god-desc {
-  width: 420rpx;
-  margin-top: 16rpx;
+  margin-top: 12rpx;
   color: rgba(247, 229, 203, 0.72);
-  font-size: 26rpx;
-  line-height: 38rpx;
+  font-size: 24rpx;
+  line-height: 36rpx;
+}
+
+.god-filter-panel {
+  margin-top: 18rpx;
+  padding: 18rpx;
+  border: 1rpx solid rgba(221, 166, 100, 0.26);
+  border-radius: 18rpx;
+  background: rgba(104, 75, 190, 0.38);
+}
+
+.god-search {
+  display: flex;
+  align-items: center;
+  height: 70rpx;
+  padding: 0 20rpx;
+  border: 1rpx solid rgba(255, 224, 163, 0.22);
+  border-radius: 14rpx;
+  background: rgba(22, 9, 28, 0.34);
+}
+
+.god-search-input {
+  flex: 1;
+  min-width: 0;
+  color: #fff2dc;
+  font-size: 24rpx;
+  font-weight: 800;
+}
+
+.god-category-scroll {
+  width: 100%;
+  margin-top: 16rpx;
+  white-space: nowrap;
+}
+
+.god-category-row {
+  display: flex;
+  gap: 12rpx;
+}
+
+.god-category-pill {
+  flex: 0 0 auto;
+  min-width: 118rpx;
+  height: 58rpx;
+  padding: 0 20rpx;
+  border: 1rpx solid rgba(255, 224, 163, 0.22);
+  border-radius: 14rpx;
+  color: rgba(245, 230, 203, 0.74);
+  font-size: 22rpx;
+  font-weight: 900;
+  line-height: 58rpx;
+  text-align: center;
+  background: rgba(22, 9, 28, 0.26);
+}
+
+.god-category-pill.active {
+  color: #241426;
+  border-color: rgba(255, 224, 163, 0.88);
+  background: linear-gradient(135deg, #ffe0a3, #c48b43);
+}
+
+.god-summary {
+  margin-top: 14rpx;
+  color: rgba(235, 214, 194, 0.62);
+  font-size: 21rpx;
+  font-weight: 900;
 }
 
 .god-list {
   display: grid;
-  gap: 16rpx;
+  gap: 18rpx;
   margin-top: 22rpx;
 }
 
 .god-card {
-  gap: 18rpx;
-  min-height: 96rpx;
-  padding: 18rpx 22rpx;
-  border: 1rpx solid rgba(221, 166, 100, 0.3);
+  display: block;
+  min-height: 0;
+  padding: 22rpx;
+  border: 1rpx solid rgba(221, 166, 100, 0.24);
   border-radius: 18rpx;
-  background: rgba(255, 255, 255, 0.055);
+  background: #432881;
 }
 
-.god-icon {
+.god-card-top {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.god-wish-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 62rpx;
   height: 62rpx;
+  flex: 0 0 auto;
+  overflow: hidden;
   border-radius: 18rpx;
+  color: #fff2dc;
+  font-size: 22rpx;
+  font-weight: 900;
+}
+
+.god-card-title {
+  min-width: 0;
 }
 
 .god-name,
+.god-source,
 .god-tip {
   display: block;
 }
 
 .god-name {
   color: #fff1d5;
-  font-size: 28rpx;
+  font-size: 27rpx;
   font-weight: 900;
 }
 
-.god-tip {
+.god-source {
   margin-top: 6rpx;
-  color: rgba(235, 214, 194, 0.58);
-  font-size: 22rpx;
+  overflow: hidden;
+  color: rgba(235, 214, 194, 0.54);
+  font-size: 21rpx;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.god-arrow {
-  margin-left: auto;
-  color: #b99569;
-  font-size: 42rpx;
+.god-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  margin-top: 16rpx;
+}
+
+.god-tag {
+  height: 36rpx;
+  padding: 0 12rpx;
+  border-radius: 10rpx;
+  color: #fff2dc;
+  font-size: 18rpx;
+  font-weight: 900;
+  line-height: 36rpx;
+  background: rgba(22, 9, 28, 0.38);
+}
+
+.god-tag.economy {
+  color: #92ffd1;
+}
+
+.god-tag.combat {
+  color: #ffb07b;
+}
+
+.god-tag.item {
+  color: #cda4ff;
+}
+
+.god-tag.utility {
+  color: #9ce6ff;
+}
+
+.god-tip {
+  margin-top: 16rpx;
+  color: rgba(245, 230, 203, 0.74);
+  font-size: 22rpx;
+  line-height: 34rpx;
 }
 
 .tone-gold {
-  background: linear-gradient(135deg, #ffe0a3, #a97334);
+  background: #684bbe;
 }
 .tone-blue {
   background: linear-gradient(135deg, #7fd7ff, #1b5fb9);
+  background: #684bbe;
 }
 .tone-violet {
-  background: linear-gradient(135deg, #be8bff, #5631b3);
+  background: #684bbe;
 }
 .tone-rose {
   background: linear-gradient(135deg, #ff91ad, #9b2948);
+  background: linear-gradient(135deg, #be8bff, #5631b3);
 }
 
 .bg-sword {
