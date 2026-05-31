@@ -424,6 +424,8 @@
 const API_BASE_URL = (
   import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"
 ).replace(/\/$/, "");
+const HERO_DETAIL_IMAGE_BASE =
+  "https://game.gtimg.cn/images/jk/jkimg/mode17s18/1624x750/";
 const tonePalette = ["tone-gold", "tone-blue", "tone-violet", "tone-rose"];
 const heroPalette = [
   "hero-one",
@@ -486,6 +488,11 @@ function splitIds(value) {
     .split("|")
     .map((item) => compactText(item))
     .filter((item) => item && item !== "-1" && item !== "0");
+}
+
+function buildHeroArt(hero) {
+  const heroPaint = compactText(hero?.heroPaint);
+  return heroPaint ? `${HERO_DETAIL_IMAGE_BASE}${heroPaint}.jpg` : "";
 }
 
 const baseItems = [
@@ -872,7 +879,10 @@ export default {
           return (
             compactText(hero.name) &&
             compactText(hero.showHeroTag, "1") === "1" &&
-            price > 0
+            compactText(hero.heroType, "0") === "0" &&
+            price > 0 &&
+            price <= 5 &&
+            splitIds(hero.species).length > 0
           );
         })
         .forEach((hero) => {
@@ -932,7 +942,7 @@ export default {
           ].slice(0, 3),
           variants,
           raw: hero,
-          picture: hero.picture,
+          picture: buildHeroArt(hero) || hero.picture,
           bg: heroPalette[index % heroPalette.length],
         }));
     },
@@ -1516,7 +1526,7 @@ export default {
 .hero-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18rpx;
+  gap: 26rpx 20rpx;
   margin-top: 28rpx;
 }
 
@@ -1536,18 +1546,17 @@ export default {
 
 .hero-card {
   position: relative;
-  height: 220rpx;
+  height: 174rpx;
   overflow: hidden;
-  border: 1rpx solid rgba(221, 166, 100, 0.62);
-  border-radius: 14rpx;
+  border: 4rpx solid rgba(127, 119, 143, 0.9);
+  border-radius: 0;
   background: #25122e;
 }
 
 .hero-card::after {
   position: absolute;
-  inset: 1rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.06);
-  border-radius: 12rpx;
+  inset: 0;
+  border: 1rpx solid rgba(255, 255, 255, 0.1);
   content: "";
   pointer-events: none;
 }
@@ -1559,17 +1568,15 @@ export default {
 }
 
 .hero-bg.remote-image {
-  background-position: center;
+  background-position: center 24%;
   background-repeat: no-repeat;
   background-size: cover;
 }
 
 .hero-shade {
-  background: linear-gradient(
-    180deg,
-    transparent 35%,
-    rgba(17, 7, 23, 0.86) 100%
-  );
+  background:
+    linear-gradient(180deg, rgba(17, 7, 23, 0.02) 0%, rgba(17, 7, 23, 0.08) 54%, rgba(28, 12, 38, 0.98) 55%, rgba(28, 12, 38, 0.98) 100%),
+    linear-gradient(90deg, rgba(17, 7, 23, 0.7) 0%, rgba(17, 7, 23, 0.04) 68%);
 }
 
 .hero-one {
@@ -1605,66 +1612,84 @@ export default {
 
 .cost-badge {
   position: absolute;
-  left: 14rpx;
-  top: 14rpx;
+  right: 12rpx;
+  bottom: 10rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40rpx;
-  height: 40rpx;
-  border: 1rpx solid rgba(232, 189, 130, 0.72);
-  border-radius: 10rpx;
-  color: #f2cf97;
-  font-size: 20rpx;
+  width: auto;
+  height: 34rpx;
+  padding: 0 8rpx;
+  border: 0;
+  border-radius: 0;
+  color: #fff;
+  font-size: 22rpx;
   font-weight: 900;
-  background: rgba(22, 9, 28, 0.72);
+  background: transparent;
+}
+
+.cost-badge::before {
+  width: 18rpx;
+  height: 18rpx;
+  margin-right: 6rpx;
+  border: 4rpx solid #fff;
+  border-radius: 50%;
+  content: "";
 }
 
 .hero-tags {
   position: absolute;
-  left: 62rpx;
-  right: 12rpx;
-  top: 14rpx;
-  display: flex;
-  gap: 8rpx;
+  left: 18rpx;
+  right: 88rpx;
+  top: 72rpx;
+  display: grid;
+  gap: 6rpx;
   overflow: hidden;
 }
 
 .hero-tags text {
-  max-width: 116rpx;
-  height: 38rpx;
-  padding: 0 10rpx;
+  display: block;
+  max-width: 150rpx;
+  height: 28rpx;
+  padding: 0;
   overflow: hidden;
-  border: 1rpx solid rgba(232, 189, 130, 0.34);
-  border-radius: 10rpx;
-  color: rgba(255, 242, 220, 0.86);
-  font-size: 18rpx;
+  border: 0;
+  border-radius: 0;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 20rpx;
   font-weight: 900;
-  line-height: 38rpx;
+  line-height: 28rpx;
   text-overflow: ellipsis;
   white-space: nowrap;
-  background: rgba(22, 9, 28, 0.58);
+  text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.75);
+  background: transparent;
+}
+
+.hero-tags text::before {
+  margin-right: 8rpx;
+  color: #fff;
+  content: "✥";
 }
 
 .hero-meta {
   position: absolute;
-  left: 16rpx;
-  right: 16rpx;
-  bottom: 16rpx;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 48rpx;
+  padding: 0 56rpx 0 12rpx;
   justify-content: space-between;
+  background: #24142f;
 }
 
 .hero-name {
   color: #fff2dc;
-  font-size: 30rpx;
+  font-size: 26rpx;
   font-weight: 900;
 }
 
 .views {
-  gap: 6rpx;
-  color: rgba(239, 219, 188, 0.72);
-  font-size: 22rpx;
-  font-weight: 800;
+  display: none;
 }
 
 .detail-mask {
